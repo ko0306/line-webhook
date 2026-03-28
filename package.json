@@ -1,0 +1,7 @@
+{
+  "name": "line-webhook",
+  "version": "1.0.0",
+  "dependencies": {
+    "@line/bot-sdk": "^9.4.0"
+  }
+}
