@@ -68,6 +68,35 @@ async function handleEvent(event) {
   if (event.type === 'message' && event.message.type === 'text') {
     const text = event.message.text.trim();
 
+    // ===== リッチメニューのボタン処理 =====
+
+    // A：お問い合わせ
+    if (text === 'お問い合わせ') {
+      await client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'お問い合わせありがとうございます！\n担当者が確認次第ご連絡いたします。\nそのままご用件をお送りください💬',
+      });
+      return;
+    }
+
+    // B：よくあるQ&A
+    if (text === 'よくあるQ&A') {
+      await client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: '【よくあるQ&A】\n\n※ 後日FAQを追加します',
+      });
+      return;
+    }
+
+    // D：規約・プランを確認
+    if (text === '規約・プランを確認') {
+      await client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: '【規約・プラン】\n\n現在のご契約プランや規約は後日こちらに表示されます。\n\nプランの変更・退会をご希望の方はその旨をこのトークにお送りください。担当者よりご連絡いたします。',
+      });
+      return;
+    }
+
     // メールアドレス以外は無視
     if (!text.includes('@') || !text.includes('.')) return;
 
