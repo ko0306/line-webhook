@@ -43,10 +43,12 @@ async function handleEvent(event) {
       greeting = '友達追加ありがとうございます！\n\n';
     }
 
-    await client.replyMessage(event.replyToken, {
-      type: 'text',
-      text: greeting + 'お問い合わせ時に入力されたメールアドレスを入力してください📧\n（例：example@gmail.com）',
-    });
+    await client.replyMessage(event.replyToken, [
+      {
+        type: 'text',
+        text: greeting + 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+      },
+    ]);
     return;
   }
 
@@ -69,10 +71,16 @@ async function handleEvent(event) {
     const result = await response.json();
 
     if (result.success) {
-      await client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: '紐付けが完了しました！\n今後ともよろしくお願いします😊',
-      });
+      await client.replyMessage(event.replyToken, [
+        {
+          type: 'text',
+          text: 'ありがとうございます！',
+        },
+        {
+          type: 'text',
+          text: '確認が完了しました😊\n今後ともよろしくお願いいたします。\nご不明な点がございましたらお気軽にご連絡ください！',
+        },
+      ]);
     } else {
       await client.replyMessage(event.replyToken, {
         type: 'text',
