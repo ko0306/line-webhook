@@ -7,6 +7,8 @@ const config = {
 
 const client = new Client(config);
 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyadGxcb7MTdiiFQgYPMBh6ZBfLOLzyIhW8kYO97F8OUTDUqNfKY4ZQ1kc0BGOZ0mWs/exec';
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(200).send('LINE Webhook Server is running');
@@ -19,35 +21,63 @@ module.exports = async (req, res) => {
     return res.status(403).send('Invalid signature');
   }
 
-  const events = req.body.events;
-
-  await Promise.all(events.map(handleEvent));
+  await Promise.all(req.body.events.map(handleEvent));
 
   res.status(200).send('OK');
 };
 
 async function handleEvent(event) {
-  if (event.type !== 'follow') return;
+  // 友達追加時
+  if (event.type === 'follow') {
+    const referral = event.referral;
+    const sourceType = referral?.sourceType;
+    const ref = referral?.ref;
 
-  const referral = event.referral;
-  const sourceType = referral?.sourceType;
-  const ref = referral?.ref;
+    let greeting = '';
 
-  let message = '';
+    if (sourceType === 'LINE_AT_AD' || sourceType === 'LINE_POINT_AD') {
+      greeting = '広告を見てくださりありがとうございます！\nお得な情報をいち早くお届けします🎁\n\n';
+    } else if (ref === 'web') {
+      greeting = 'ホームページからご登録ありがとうございます！\n\n';
+    } else {
+      greeting = '友達追加ありがとうございます！\n\n';
+    }
 
-  if (sourceType === 'LINE_AT_AD' || sourceType === 'LINE_POINT_AD') {
-    // LINE広告から友達追加
-    message = '広告を見てくださりありがとうございます！\nお得な情報をいち早くお届けします🎁';
-  } else if (ref === 'web') {
-    // Webサイトから友達追加
-    message = 'ホームページからご登録ありがとうございます！\n最新情報をお届けします😊';
-  } else {
-    // その他（QRコードなど）
-    message = '友達追加ありがとうございます！\nよろしくお願いします🙏';
+    await client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: greeting + 'お問い合わせ時に入力されたメールアドレスを入力してください📧\n（例：example@gmail.com）',
+    });
+    return;
   }
 
-  await client.replyMessage(event.replyToken, {
-    type: 'text',
-    text: message,
-  });
+  // メッセージ受信時
+  if (event.type === 'message' && event.message.type === 'text') {
+    const text = event.message.text.trim();
+
+    // メールアドレス以外は無視
+    if (!text.includes('@') || !text.includes('.')) return;
+
+    const lineUserId = event.source.userId;
+
+    // GASにメールとLINEユーザーIDを送信
+    const response = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: text, lineUserId }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      await client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: '紐付けが完了しました！\n今後ともよろしくお願いします😊',
+      });
+    } else {
+      await client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'メールアドレスが見つかりませんでした。\nもう一度確認して入力してください。',
+      });
+    }
+  }
 }
