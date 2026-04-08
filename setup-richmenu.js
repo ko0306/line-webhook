@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || '여기에토큰입력';
+const TOKEN = 'KhJqGebPb2xwuqgJDiz7Ka+q9wD4bK/oghGQNvl41xgG+dzw7yFlyD0UZDjse6o/G2Gz16eRt5/URuZp1m/5UVTq9BL+920KDPKgFa338SPvImv2RPGy32OCkmaPZveB1E5UyzbPzK6TECGIpV98+AdB04t89/1O/w1cDnyilFU=';
 
 async function setup() {
   console.log('① リッチメニューを作成中...');

@@ -70,6 +70,15 @@ async function handleEvent(event) {
 
     // ===== リッチメニューのボタン処理 =====
 
+    // メール認証（Webからお問い合わせ後にLINEに戻ってきた既存ユーザー）
+    if (text === 'メール認証') {
+      await client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+      });
+      return;
+    }
+
     // A：お問い合わせ
     if (text === 'お問い合わせ') {
       await client.replyMessage(event.replyToken, {
