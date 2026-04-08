@@ -5,5 +5,8 @@
       "memory": 128,
       "maxDuration": 10
     }
-  }
+  },
+  "routes": [
+    { "src": "/liff", "dest": "/public/liff.html" }
+  ]
 }
