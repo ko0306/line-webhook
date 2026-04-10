@@ -48,19 +48,68 @@ async function handleEvent(event) {
       }),
     });
 
-    let greeting = '';
-    if (sourceType === 'LINE_AT_AD' || sourceType === 'LINE_POINT_AD') {
-      greeting = '広告を見てくださりありがとうございます！\n\n';
-    } else if (ref === 'web' || ref === 'shift') {
-      greeting = 'ホームページからご登録ありがとうございます！\n\n';
-    } else {
-      greeting = '友達追加ありがとうございます！\n\n';
+    // Webからの登録はメール確認フローへ直行
+    if (ref === 'web' || ref === 'shift') {
+      await client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+      });
+      return;
     }
 
-    await client.replyMessage(event.replyToken, {
-      type: 'text',
-      text: greeting + 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
-    });
+    // 広告・直接登録は挨拶メッセージ＋商品カードを送信
+    await client.replyMessage(event.replyToken, [
+      {
+        type: 'text',
+        text: 'はじめまして！OZONONIXです。\n友だち追加ありがとうございます😊\n\nこのアカウントでは、\n我が社が提供しているサービスの\n詳細を紹介しています！！',
+      },
+      {
+        type: 'text',
+        text: '我々は以下の三つのサービスを提供しています💪\n\n詳しい資料には、具体例を用いた値段、発注から提供までの流れが掲載されています！',
+      },
+      {
+        type: 'template',
+        altText: 'サービス一覧',
+        template: {
+          type: 'carousel',
+          columns: [
+            {
+              thumbnailImageUrl: 'https://via.placeholder.com/1024x512',// ※後で差し替え
+              imageAspectRatio: 'rectangle',
+              imageSize: 'cover',
+              title: 'シフト管理アプリ',
+              text: 'シフト管理・勤怠管理・勤務時間集計まで一つで完結 ¥1500〜',
+              actions: [
+                { type: 'uri', label: '詳しい資料', uri: 'https://example.com' }, // ※後で差し替え
+                { type: 'uri', label: 'お問い合わせ開始', uri: 'https://liff.line.me/2009734205-wWWdTXIP' },
+              ],
+            },
+            {
+              thumbnailImageUrl: 'https://via.placeholder.com/1024x512', // ※後で差し替え
+              imageAspectRatio: 'rectangle',
+              imageSize: 'cover',
+              title: 'Web作成',
+              text: '丁寧なカウンセリングと自由度の高いカスタマイズ ¥50000〜',
+              actions: [
+                { type: 'uri', label: '詳しい資料', uri: 'https://example.com' }, // ※後で差し替え
+                { type: 'uri', label: 'お問い合わせ開始', uri: 'https://liff.line.me/2009734205-wWWdTXIP' },
+              ],
+            },
+            {
+              thumbnailImageUrl: 'https://via.placeholder.com/1024x512', // ※後で差し替え
+              imageAspectRatio: 'rectangle',
+              imageSize: 'cover',
+              title: '業務効率化アプリ作成',
+              text: 'お客様に合わせたアプリを一から作成 ¥500000〜',
+              actions: [
+                { type: 'uri', label: '詳しい資料', uri: 'https://example.com' }, // ※後で差し替え
+                { type: 'uri', label: 'お問い合わせ開始', uri: 'https://liff.line.me/2009734205-wWWdTXIP' },
+              ],
+            },
+          ],
+        },
+      },
+    ]);
     return;
   }
 
