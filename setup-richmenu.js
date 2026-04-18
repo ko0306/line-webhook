@@ -21,7 +21,7 @@ async function setup() {
         {
           // A：お問い合わせ（左上）
           bounds: { x: 0, y: 0, width: 1250, height: 843 },
-          action: { type: 'message', text: 'お問い合わせ' },
+          action: { type: 'uri', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
         },
         {
           // B：よくあるQ&A（右上）
@@ -29,9 +29,9 @@ async function setup() {
           action: { type: 'message', text: 'よくあるQ&A' },
         },
         {
-          // C：新サービス（左下）※URLは後で変更
+          // C：商品紹介（左下）
           bounds: { x: 0, y: 843, width: 1250, height: 843 },
-          action: { type: 'uri', uri: 'https://example.com' },
+          action: { type: 'uri', uri: 'https://harurururun.github.io/company-OZONONIX/products' },
         },
         {
           // D：規約・プラン（右下）

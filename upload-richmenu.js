@@ -2,11 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 const TOKEN = 'KhJqGebPb2xwuqgJDiz7Ka+q9wD4bK/oghGQNvl41xgG+dzw7yFlyD0UZDjse6o/G2Gz16eRt5/URuZp1m/5UVTq9BL+920KDPKgFa338SPvImv2RPGy32OCkmaPZveB1E5UyzbPzK6TECGIpV98+AdB04t89/1O/w1cDnyilFU=';
-const RICH_MENU_ID = 'richmenu-b8616df8df1bbc46006be4d78c918430';
+const RICH_MENU_ID = 'richmenu-9d17dea9ea4ef8f16173b4f961314371';
 
 async function upload() {
   // 画像サイズ確認
-  const stats = fs.statSync(path.join(__dirname, 'richmenu.png'));
+  const stats = fs.statSync(path.join(__dirname, 'richmenu.jpg'));
   const sizeMB = (stats.size / 1024 / 1024).toFixed(2);
   console.log(`画像サイズ: ${sizeMB}MB`);
 
@@ -16,7 +16,7 @@ async function upload() {
   }
 
   console.log('① 画像をアップロード中...');
-  const imageBuffer = fs.readFileSync(path.join(__dirname, 'richmenu.png'));
+  const imageBuffer = fs.readFileSync(path.join(__dirname, 'richmenu.jpg'));
 
   const imageRes = await fetch(
     `https://api-data.line.me/v2/bot/richmenu/${RICH_MENU_ID}/content`,
@@ -24,7 +24,7 @@ async function upload() {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${TOKEN}`,
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/jpeg',
       },
       body: imageBuffer,
     }
