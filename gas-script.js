@@ -76,6 +76,7 @@ function doPost(e) {
       case 'withdraw':             return withdrawUser(data);
       case 'getConversationState': return getConversationState(data);
       case 'setConversationState': return setConversationState(data);
+      case 'saveInquiry':          return saveInquiry(data);
       default:
         return jsonResponse({ success: false, error: 'Unknown action' });
     }
@@ -260,6 +261,27 @@ function withdrawUser(data) {
   sheet.getRange(row, COL.WITHDRAWN).setValue(
     Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm')
   );
+  return jsonResponse({ success: true });
+}
+
+// ================================================================
+// saveInquiry（LINEお問い合わせフロー）
+// ================================================================
+function saveInquiry(data) {
+  const ss = SpreadsheetApp.openById(SS_ID);
+  let sheet = ss.getSheetByName('LINEお問い合わせ');
+  if (!sheet) {
+    sheet = ss.insertSheet('LINEお問い合わせ');
+    sheet.appendRow(['受付日時', 'lineUserId', 'お名前', 'メール', 'サービス', '内容']);
+  }
+  sheet.appendRow([
+    Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm'),
+    data.lineUserId || '',
+    data.name || '',
+    data.email || '',
+    data.service || '',
+    data.details || '',
+  ]);
   return jsonResponse({ success: true });
 }
 

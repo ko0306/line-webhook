@@ -14,14 +14,14 @@ async function setup() {
     },
     body: JSON.stringify({
       size: { width: 2500, height: 1686 },
-      selected: true,
+      selected: false,
       name: 'OZONONIXメニュー',
       chatBarText: 'メニューを開く',
       areas: [
         {
-          // A：お問い合わせ（左上）
+          // A：お問い合わせ（左上）→ LINEチャットで質問フロー開始
           bounds: { x: 0, y: 0, width: 1250, height: 843 },
-          action: { type: 'uri', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
+          action: { type: 'message', text: 'お問い合わせ開始' },
         },
         {
           // B：よくあるQ&A（右上）
@@ -34,9 +34,9 @@ async function setup() {
           action: { type: 'uri', uri: 'https://harurururun.github.io/company-OZONONIX/products' },
         },
         {
-          // D：規約・プラン（右下）
+          // D：規約・プラン（右下）→ LIFFで契約情報ページを表示
           bounds: { x: 1250, y: 843, width: 1250, height: 843 },
-          action: { type: 'message', text: '規約・プランを確認' },
+          action: { type: 'uri', uri: 'https://liff.line.me/2009734205-wWWdTXIP?page=plan' },
         },
       ],
     }),
@@ -52,7 +52,7 @@ async function setup() {
   console.log('✅ 作成成功 ID:', richMenu.richMenuId);
 
   console.log('② 画像をアップロード中...');
-  const imageBuffer = fs.readFileSync(path.join(__dirname, 'richmenu.png'));
+  const imageBuffer = fs.readFileSync(path.join(__dirname, 'richmenu.jpg'));
 
   const imageRes = await fetch(
     `https://api-data.line.me/v2/bot/richmenu/${richMenu.richMenuId}/content`,
@@ -60,7 +60,7 @@ async function setup() {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${TOKEN}`,
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/jpeg',
       },
       body: imageBuffer,
     }
