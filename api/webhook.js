@@ -148,7 +148,7 @@ async function handleFollow(event) {
           text: 'シフト管理・勤怠・集計まで完結 ¥1500〜',
           actions: [
             { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product2/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/product2/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
           ],
         },
         {
@@ -158,7 +158,7 @@ async function handleFollow(event) {
           text: '丁寧なカウンセリングと高いカスタマイズ ¥50000〜',
           actions: [
             { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product1/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/product1/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
           ],
         },
         {
@@ -168,7 +168,7 @@ async function handleFollow(event) {
           text: 'お客様に合わせたアプリを一から制作 ¥500000〜',
           actions: [
             { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product3/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/product3/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
           ],
         },
       ],
