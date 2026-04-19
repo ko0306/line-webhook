@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TOKEN = 'KhJqGebPb2xwuqgJDiz7Ka+q9wD4bK/oghGQNvl41xgG+dzw7yFlyD0UZDjse6o/G2Gz16eRt5/URuZp1m/5UVTq9BL+920KDPKgFa338SPvImv2RPGy32OCkmaPZveB1E5UyzbPzK6TECGIpV98+AdB04t89/1O/w1cDnyilFU=';
-const RICH_MENU_ID = 'richmenu-08f44911cb218ce1118b19b4739bded0';
+const RICH_MENU_ID = 'richmenu-2dbe992ffe48906a957dc2bfcaf31578';
 
 async function upload() {
   // 画像サイズ確認

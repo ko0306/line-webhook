@@ -13,30 +13,30 @@ async function setup() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      size: { width: 2500, height: 1686 },
+      size: { width: 2500, height: 843 },
       selected: false,
       name: 'OZONONIXメニュー',
       chatBarText: 'メニューを開く',
       areas: [
         {
-          // A：お問い合わせ（左上）→ LINEチャットで質問フロー開始
-          bounds: { x: 0, y: 0, width: 1250, height: 843 },
+          // A：お問い合わせ（左上）
+          bounds: { x: 22, y: 22, width: 1206, height: 399 },
           action: { type: 'message', text: 'お問い合わせ開始' },
         },
         {
           // B：よくあるQ&A（右上）
-          bounds: { x: 1250, y: 0, width: 1250, height: 843 },
+          bounds: { x: 1272, y: 22, width: 1206, height: 399 },
           action: { type: 'message', text: 'よくあるQ&A' },
         },
         {
           // C：商品紹介（左下）
-          bounds: { x: 0, y: 843, width: 1250, height: 843 },
+          bounds: { x: 22, y: 422, width: 1206, height: 399 },
           action: { type: 'uri', uri: 'https://harurururun.github.io/company-OZONONIX/products' },
         },
         {
-          // D：規約・プラン（右下）→ LIFFで契約情報ページを表示
-          bounds: { x: 1250, y: 843, width: 1250, height: 843 },
-          action: { type: 'uri', uri: 'https://liff.line.me/2009734205-wWWdTXIP?page=plan' },
+          // D：規約・プラン（右下）→ LINEチャットで表示
+          bounds: { x: 1272, y: 422, width: 1206, height: 399 },
+          action: { type: 'message', text: '規約・プランを確認' },
         },
       ],
     }),
