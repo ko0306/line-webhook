@@ -98,8 +98,8 @@ module.exports = async (req, res) => {
   const body = JSON.stringify(req.body);
   if (!validateSignature(body, config.channelSecret, signature)) return res.status(403).send('Invalid signature');
 
-  res.status(200).send('OK'); // すぐに200を返す
   await Promise.all(req.body.events.map(handleEvent));
+  res.status(200).send('OK');
 };
 
 // ==================== イベント振り分け ====================
