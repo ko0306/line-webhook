@@ -171,6 +171,7 @@ async function handleFollow(event) {
         },
       ],
     },
+    }
   ]);
 }
 
