@@ -77,7 +77,8 @@ function doPost(e) {
       case 'getConversationState': return getConversationState(data);
       case 'setConversationState': return setConversationState(data);
       case 'saveInquiry':          return saveInquiry(data);
-      case 'saveCustomization':    return saveCustomization(data);
+      case 'saveCustomization':       return saveCustomization(data);
+      case 'sendNotificationEmail':   return sendNotificationEmail(data);
       default:
         return jsonResponse({ success: false, error: 'Unknown action' });
     }
@@ -286,6 +287,32 @@ function saveInquiry(data) {
     data.details || '',
   ]);
   return jsonResponse({ success: true });
+}
+
+// ================================================================
+// sendNotificationEmail（担当者へメール通知）
+// ================================================================
+function sendNotificationEmail(data) {
+  try {
+    const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+    MailApp.sendEmail({
+      to: 'joudencompany@gmail.com',
+      subject: '【OZONOIX LINE】お問い合わせが届きました',
+      body: [
+        'OZONONIXの公式LINEにお問い合わせが届きました。',
+        '',
+        '■ 受付日時: ' + now,
+        '■ LINE ユーザーID: ' + (data.lineUserId || '不明'),
+        '■ 内容: ' + (data.message || 'お問い合わせボタンが押されました'),
+        '',
+        '▼ LINE公式アカウントマネージャーから返信してください',
+        'https://manager.line.biz/',
+      ].join('\n'),
+    });
+    return jsonResponse({ success: true });
+  } catch (err) {
+    return jsonResponse({ success: false, error: err.message });
+  }
 }
 
 // ================================================================

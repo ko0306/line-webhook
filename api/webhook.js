@@ -114,15 +114,20 @@ async function handleFollow(event) {
   const userId = event.source.userId;
   const service = ref === 'shift' ? 'shift' : 'other';
 
-  await gasPost('saveUserService', { lineUserId: userId, service });
-
   if (ref === 'web' || ref === 'shift') {
-    await client.replyMessage(event.replyToken, {
-      type: 'text',
-      text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
-    });
+    // replyToken期限切れ防止のため並列実行
+    await Promise.all([
+      client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+      }),
+      gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
+      gasPost('saveUserService', { lineUserId: userId, service }),
+    ]);
     return;
   }
+
+  await gasPost('saveUserService', { lineUserId: userId, service });
 
   await client.replyMessage(event.replyToken, [
     { type: 'text', text: 'はじめまして！OZONONIXです😊' },
@@ -180,7 +185,7 @@ async function handleMessage(event) {
       await gasPost('setConversationState', { lineUserId, state: 'WAITING_EMAIL', stateData: {} });
       return replyText(event.replyToken, 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧');
     case 'お問い合わせ開始':
-      return handleInquiryStart(event, lineUserId);
+      return handleInquiryContact(event, lineUserId);
     case 'よくあるQ&A':
       return handleFaqTop(event);
     case '規約・プランを確認':
@@ -290,6 +295,20 @@ async function handleFaqCategory(event, category) {
         ['お問い合わせ', 'お問い合わせ開始'],
       ]),
     },
+  ]);
+}
+
+// ==================== リッチメニュー「お問い合わせ」→ 担当者チャット ====================
+async function handleInquiryContact(event, lineUserId) {
+  await Promise.all([
+    client.replyMessage(event.replyToken, [
+      { type: 'text', text: '担当者に繋ぎます！\nこちらに直接メッセージをお送りください😊\n担当者が確認次第、返信いたします。' },
+      { type: 'text', text: '📞 対応時間：平日 10:00〜18:00\n💬 LINEは24時間受付中（返答は営業時間内）' },
+    ]),
+    gasPost('sendNotificationEmail', {
+      lineUserId,
+      message: 'リッチメニューの「お問い合わせ」ボタンが押されました。LINEで担当者対応をお願いします。',
+    }),
   ]);
 }
 

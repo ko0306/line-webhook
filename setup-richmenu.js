@@ -19,9 +19,9 @@ async function setup() {
       chatBarText: 'メニューを開く',
       areas: [
         {
-          // A：お問い合わせ（左上）→ メール認証テキストを直接送信
+          // A：お問い合わせ（左上）→ 担当者チャット開始
           bounds: { x: 22, y: 44, width: 1206, height: 798 },
-          action: { type: 'message', text: 'メール認証' },
+          action: { type: 'message', text: 'お問い合わせ開始' },
         },
         {
           // B：よくあるQ&A（右上）
