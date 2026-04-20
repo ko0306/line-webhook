@@ -142,7 +142,7 @@ async function handleFollow(event) {
       type: 'carousel',
       columns: [
         {
-          thumbnailImageUrl: `https://${process.env.VERCEL_URL}/card1_shift.png`,
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card1_shift.png',
           imageAspectRatio: 'rectangle', imageSize: 'cover',
           title: 'シフト管理アプリ',
           text: 'シフト管理・勤怠・集計まで完結 ¥1500〜',
@@ -152,7 +152,7 @@ async function handleFollow(event) {
           ],
         },
         {
-          thumbnailImageUrl: `https://${process.env.VERCEL_URL}/card2_hp.png`,
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card2_hp.png',
           imageAspectRatio: 'rectangle', imageSize: 'cover',
           title: 'HP作成',
           text: '丁寧なカウンセリングと高いカスタマイズ ¥50000〜',
@@ -162,7 +162,7 @@ async function handleFollow(event) {
           ],
         },
         {
-          thumbnailImageUrl: `https://${process.env.VERCEL_URL}/card3_app.png`,
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card3_app.png',
           imageAspectRatio: 'rectangle', imageSize: 'cover',
           title: '業務効率化アプリ制作',
           text: 'お客様に合わせたアプリを一から制作 ¥500000〜',
@@ -449,7 +449,7 @@ async function handlePlanCheck(event) {
   const result = await gasPost('getUserInfo', { lineUserId });
 
   if (!result.success) {
-    return replyText(event.replyToken, 'ご契約情報が見つかりませんでした。\nメールアドレスをお送りいただくか、担当者にお問い合わせください。');
+    return replyText(event.replyToken, '現在契約中のプランはありません。\nご利用をご希望の方は、お問い合わせボタンよりお申し込みください。');
   }
 
   const { email, inquiry, plan, trial, budget, withdrawn } = result;
