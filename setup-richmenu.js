@@ -13,29 +13,29 @@ async function setup() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      size: { width: 2500, height: 843 },
-      selected: false,
+      size: { width: 2500, height: 1686 },
+      selected: true,
       name: 'OZONONIXメニュー',
       chatBarText: 'メニューを開く',
       areas: [
         {
           // A：お問い合わせ（左上）→ LIFFページを開く
-          bounds: { x: 22, y: 22, width: 1206, height: 399 },
+          bounds: { x: 22, y: 44, width: 1206, height: 798 },
           action: { type: 'uri', uri: 'https://liff.line.me/2009734205-wWWdTXIP' },
         },
         {
           // B：よくあるQ&A（右上）
-          bounds: { x: 1272, y: 22, width: 1206, height: 399 },
+          bounds: { x: 1272, y: 44, width: 1206, height: 798 },
           action: { type: 'message', text: 'よくあるQ&A' },
         },
         {
           // C：商品紹介（左下）
-          bounds: { x: 22, y: 422, width: 1206, height: 399 },
+          bounds: { x: 22, y: 844, width: 1206, height: 798 },
           action: { type: 'uri', uri: 'https://harurururun.github.io/company-OZONONIX/products' },
         },
         {
           // D：規約・プラン（右下）→ LINEチャットで表示
-          bounds: { x: 1272, y: 422, width: 1206, height: 399 },
+          bounds: { x: 1272, y: 844, width: 1206, height: 798 },
           action: { type: 'message', text: '規約・プランを確認' },
         },
       ],
@@ -52,7 +52,7 @@ async function setup() {
   console.log('✅ 作成成功 ID:', richMenu.richMenuId);
 
   console.log('② 画像をアップロード中...');
-  const imageBuffer = fs.readFileSync(path.join(__dirname, 'richmenu.jpg'));
+  const imageBuffer = fs.readFileSync(path.join(__dirname, 'richmenu_full.jpg'));
 
   const imageRes = await fetch(
     `https://api-data.line.me/v2/bot/richmenu/${richMenu.richMenuId}/content`,

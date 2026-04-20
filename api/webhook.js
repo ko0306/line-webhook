@@ -6,7 +6,7 @@ const config = {
 };
 const client = new Client(config);
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxszwwt70qW-aY2mGbjTUtIFl3M9AN2rrqAw8Z1BlfbbSWw8KT9AaoWn2rD553XSWCr/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzpz3kErJFUl-p5nB65ic0-hZZDGTGSl9VzOukOwplo6u-IvlOHZX_CX6EpBo-KdRuV/exec';
 
 const PLAN_INFO = {
   'ライト':       { price: 1500 },

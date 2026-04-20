@@ -138,8 +138,10 @@ function linkUser(data) {
     }
   }
 
+  const inputEmail = String(data.email || '').trim().toLowerCase();
   for (let i = 0; i < emailValues.length; i++) {
-    if (emailValues[i][0] === data.email) {
+    const cellEmail = String(emailValues[i][0] || '').trim().toLowerCase();
+    if (cellEmail && cellEmail === inputEmail) {
       const row = i + 1;
       sheet.getRange(row, COL.LINE_USER_ID).setValue(data.lineUserId);
 
