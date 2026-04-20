@@ -184,6 +184,7 @@ async function handleMessage(event) {
   // --- 固定テキスト ---
   switch (text) {
     case 'メール認証':
+      await gasPost('setConversationState', { lineUserId, state: 'WAITING_EMAIL', stateData: {} });
       return replyText(event.replyToken, 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧');
     case 'お問い合わせ開始':
       return handleInquiryStart(event, lineUserId);
@@ -231,6 +232,8 @@ async function handleMessage(event) {
       return handleInquiryEmail(event, text, lineUserId, stateData);
     case 'INQUIRY_NAME':
       return handleInquiryName(event, text, lineUserId, stateData);
+    case 'WAITING_EMAIL':
+      return handleEmailInput(event, text, lineUserId);
     default:
       if (state && state.startsWith('WAITING_INFO_CHANGE_VALUE:')) {
         return handleInfoChangeValue(event, text, lineUserId, state.split(':')[1]);
@@ -364,11 +367,13 @@ async function handleEmailInput(event, email, lineUserId) {
   const result = await gasPost('linkUser', { email, lineUserId });
 
   if (!result.success) {
+    await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
     return client.replyMessage(event.replyToken, {
       type: 'text',
       text: 'メールアドレスが見つかりませんでした。\n\nまずウェブのお問い合わせフォームからお申し込みください👇\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nお申し込み後、こちらでメールアドレスを入力してください。',
     });
   }
+  await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
 
   const { inquiry, plan, trial } = result;
   const isShift = (inquiry && inquiry.includes('シフト')) || result.service === 'shift';

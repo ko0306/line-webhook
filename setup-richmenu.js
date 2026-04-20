@@ -19,9 +19,9 @@ async function setup() {
       chatBarText: 'メニューを開く',
       areas: [
         {
-          // A：お問い合わせ（左上）→ LIFFページを開く
+          // A：お問い合わせ（左上）→ メール認証テキストを直接送信
           bounds: { x: 22, y: 44, width: 1206, height: 798 },
-          action: { type: 'uri', uri: 'https://liff.line.me/2009734205-wWWdTXIP' },
+          action: { type: 'message', text: 'メール認証' },
         },
         {
           // B：よくあるQ&A（右上）
