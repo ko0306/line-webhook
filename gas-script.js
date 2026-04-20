@@ -77,6 +77,7 @@ function doPost(e) {
       case 'getConversationState': return getConversationState(data);
       case 'setConversationState': return setConversationState(data);
       case 'saveInquiry':          return saveInquiry(data);
+      case 'saveCustomization':    return saveCustomization(data);
       default:
         return jsonResponse({ success: false, error: 'Unknown action' });
     }
@@ -281,6 +282,24 @@ function saveInquiry(data) {
     data.email || '',
     data.service || '',
     data.details || '',
+  ]);
+  return jsonResponse({ success: true });
+}
+
+// ================================================================
+// saveCustomization（カスタマイズ希望内容を保存）
+// ================================================================
+function saveCustomization(data) {
+  const ss = SpreadsheetApp.openById(SS_ID);
+  let sheet = ss.getSheetByName('カスタマイズ要望');
+  if (!sheet) {
+    sheet = ss.insertSheet('カスタマイズ要望');
+    sheet.appendRow(['受付日時', 'lineUserId', 'カスタマイズ内容']);
+  }
+  sheet.appendRow([
+    Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm'),
+    data.lineUserId || '',
+    data.content || '',
   ]);
   return jsonResponse({ success: true });
 }

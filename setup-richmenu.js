@@ -19,9 +19,9 @@ async function setup() {
       chatBarText: 'メニューを開く',
       areas: [
         {
-          // A：お問い合わせ（左上）
+          // A：お問い合わせ（左上）→ LIFFページを開く
           bounds: { x: 22, y: 22, width: 1206, height: 399 },
-          action: { type: 'message', text: 'お問い合わせ開始' },
+          action: { type: 'uri', uri: 'https://liff.line.me/2009734205-wWWdTXIP' },
         },
         {
           // B：よくあるQ&A（右上）
