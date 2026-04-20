@@ -364,7 +364,10 @@ async function handleEmailInput(event, email, lineUserId) {
   const result = await gasPost('linkUser', { email, lineUserId });
 
   if (!result.success) {
-    return replyText(event.replyToken, 'メールアドレスが見つかりませんでした。\nもう一度確認して入力してください。');
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: 'メールアドレスが見つかりませんでした。\n\nまずウェブのお問い合わせフォームからお申し込みください👇\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nお申し込み後、こちらでメールアドレスを入力してください。',
+    });
   }
 
   const { inquiry, plan, trial } = result;
@@ -432,6 +435,8 @@ async function handleCustomizationReply(event, text, lineUserId, stateData) {
 }
 
 async function handleCustomizationDetails(event, lineUserId) {
+  const customText = event.message.text;
+  await gasPost('saveCustomization', { lineUserId, content: customText });
   await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
   await client.replyMessage(event.replyToken, { type: 'text', text: '承知しました。ありがとうございます。' });
   await sleep(1200);
