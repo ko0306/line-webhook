@@ -124,18 +124,11 @@ async function handleFollow(event) {
     return;
   }
 
-  // 順番にメッセージを表示（一文ずつ）
-  await client.replyMessage(event.replyToken, {
-    type: 'text', text: 'はじめまして！',
-  });
-  await sleep(1200);
-  await client.pushMessage(userId, { type: 'text', text: 'OZONONIXです😊' });
-  await sleep(1200);
-  await client.pushMessage(userId, { type: 'text', text: '友だち追加ありがとうございます！\nこのアカウントでは、弊社サービスのご紹介・お問い合わせ対応をしています。' });
-  await sleep(1400);
-  await client.pushMessage(userId, { type: 'text', text: '我々は以下の三つのサービスを提供しています💪\n詳しい資料には、値段・発注から提供までの流れが掲載されています！' });
-  await sleep(1400);
-  await client.pushMessage(userId, {
+  await client.replyMessage(event.replyToken, [
+    { type: 'text', text: 'はじめまして！OZONONIXです😊' },
+    { type: 'text', text: '友だち追加ありがとうございます！\nこのアカウントでは、弊社サービスのご紹介・お問い合わせ対応をしています。' },
+    { type: 'text', text: '我々は以下の三つのサービスを提供しています💪\n詳しい資料には、値段・発注から提供までの流れが掲載されています！' },
+    {
     type: 'template',
     altText: 'サービス一覧',
     template: {
@@ -173,7 +166,7 @@ async function handleFollow(event) {
         },
       ],
     },
-  });
+  ]);
 }
 
 // ==================== メッセージ受信 ====================
@@ -386,39 +379,35 @@ async function handleEmailInput(event, email, lineUserId) {
       lineUserId, state: 'WAITING_CUSTOMIZATION', stateData: { plan, inquiry },
     });
 
-    await client.replyMessage(event.replyToken, { type: 'text', text: 'ありがとうございます！' });
-    await sleep(1200);
-    await client.pushMessage(lineUserId, { type: 'text', text: '確認が完了しました😊' });
-    await sleep(1200);
-    await client.pushMessage(lineUserId, {
-      type: 'text',
-      text: [
-        '【お申し込み内容】',
-        'サービス: シフト管理アプリ',
-        plan ? `プラン: ${plan}（¥${(planMeta.price || 0).toLocaleString()}/月）` : '',
-        (trial === 'はい' || trial === true || trial === 'TRUE') ? '無料トライアル: 希望あり' : '',
-      ].filter(Boolean).join('\n'),
-    });
-    await sleep(1400);
-    await client.pushMessage(lineUserId, {
-      type: 'text',
-      text: `シフトアプリの機能・プラン詳細はこちらからご確認いただけます👇\n${featuresUrl}\n\n選択プラン「${plan || '未設定'}」でご利用いただける機能が表示されています。`,
-    });
-    await sleep(1400);
-    await client.pushMessage(lineUserId, {
-      type: 'text',
-      text: 'これら以外に付けたい機能があれば独自カスタマイズができます。\n\nカスタマイズをご希望ですか？',
-      quickReply: makeQuickReply([
-        ['はい', 'カスタマイズ_はい'],
-        ['いいえ', 'カスタマイズ_いいえ'],
-      ]),
-    });
+    await client.replyMessage(event.replyToken, [
+      { type: 'text', text: 'ありがとうございます！確認が完了しました😊' },
+      {
+        type: 'text',
+        text: [
+          '【お申し込み内容】',
+          'サービス: シフト管理アプリ',
+          plan ? `プラン: ${plan}（¥${(planMeta.price || 0).toLocaleString()}/月）` : '',
+          (trial === 'はい' || trial === true || trial === 'TRUE') ? '無料トライアル: 希望あり' : '',
+        ].filter(Boolean).join('\n'),
+      },
+      {
+        type: 'text',
+        text: `シフトアプリの機能・プラン詳細はこちらからご確認いただけます👇\n${featuresUrl}\n\n選択プラン「${plan || '未設定'}」でご利用いただける機能が表示されています。`,
+      },
+      {
+        type: 'text',
+        text: 'これら以外に付けたい機能があれば独自カスタマイズができます。\n\nカスタマイズをご希望ですか？',
+        quickReply: makeQuickReply([
+          ['はい', 'カスタマイズ_はい'],
+          ['いいえ', 'カスタマイズ_いいえ'],
+        ]),
+      },
+    ]);
   } else {
-    await client.replyMessage(event.replyToken, { type: 'text', text: 'ありがとうございます！' });
-    await sleep(1200);
-    await client.pushMessage(lineUserId, { type: 'text', text: '確認が完了しました😊' });
-    await sleep(1200);
-    await client.pushMessage(lineUserId, { type: 'text', text: 'お問い合わせ内容を確認し、カウンセリングをしたいと思います。\n担当者からご連絡しますので、しばらくお待ちください。' });
+    await client.replyMessage(event.replyToken, [
+      { type: 'text', text: 'ありがとうございます！確認が完了しました😊' },
+      { type: 'text', text: 'お問い合わせ内容を確認し、カウンセリングをしたいと思います。\n担当者からご連絡しますので、しばらくお待ちください。' },
+    ]);
   }
 }
 
