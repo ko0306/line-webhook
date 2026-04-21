@@ -250,7 +250,19 @@ async function handleMessage(event) {
     return replyText(event.replyToken, match.reply);
   }
 
-  // --- 未判定メッセージ ---
+  // --- 未判定メッセージ：未登録ならメールアドレスを聞く ---
+  const userInfo = await gasPost('getUserInfo', { lineUserId });
+  if (!userInfo.success || !userInfo.email) {
+    await Promise.all([
+      gasPost('setConversationState', { lineUserId, state: 'WAITING_EMAIL', stateData: {} }),
+      client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+      }),
+    ]);
+    return;
+  }
+
   await client.replyMessage(event.replyToken, {
     type: 'text',
     text: 'メッセージありがとうございます😊\nご質問内容に応じてご案内します。',
@@ -301,25 +313,6 @@ async function handleFaqCategory(event, category) {
 
 // ==================== リッチメニュー「お問い合わせ」→ 担当者チャット ====================
 async function handleInquiryContact(event, lineUserId) {
-  const userInfo = await gasPost('getUserInfo', { lineUserId });
-
-  // 未登録ユーザー → メールアドレスを先に確認
-  if (!userInfo.success || !userInfo.email) {
-    await Promise.all([
-      client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
-      }),
-      gasPost('setConversationState', { lineUserId, state: 'WAITING_EMAIL', stateData: {} }),
-      gasPost('sendNotificationEmail', {
-        lineUserId,
-        message: 'リッチメニューの「お問い合わせ」ボタンが押されました（メール認証待ち）。',
-      }),
-    ]);
-    return;
-  }
-
-  // 登録済みユーザー → 担当者チャットへ接続
   await Promise.all([
     client.replyMessage(event.replyToken, [
       { type: 'text', text: '担当者に繋ぎます！\nこちらに直接メッセージをお送りください😊\n担当者が確認次第、返信いたします。' },
