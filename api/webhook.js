@@ -43,7 +43,7 @@ const KEYWORD_RULES = [
   },
   {
     words: ['営業時間', '対応時間', '何時', '休日', '土日'],
-    reply: '対応時間のご質問ありがとうございます！\n\n📞 対応時間：平日 10:00〜18:00\n💬 LINEは24時間受付中（返答は営業時間内）\n\nお気軽にメッセージをお送りください！',
+    reply: '対応時間のご質問ありがとうございます！\n\n💬 対応時間：平日 10:00〜18:00\n\nお気軽にメッセージをお送りください！',
   },
   {
     words: ['カスタマイズ', 'オリジナル', '独自機能'],
@@ -304,7 +304,7 @@ async function handleInquiryContact(event, lineUserId) {
   await Promise.all([
     client.replyMessage(event.replyToken, [
       { type: 'text', text: '担当者に繋ぎます！\nこちらに直接メッセージをお送りください😊\n担当者が確認次第、返信いたします。' },
-      { type: 'text', text: '📞 対応時間：平日 10:00〜18:00\n💬 LINEは24時間受付中（返答は営業時間内）' },
+      { type: 'text', text: '💬 対応時間：平日 10:00〜18:00' },
     ]),
     gasPost('sendNotificationEmail', {
       lineUserId,
