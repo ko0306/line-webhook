@@ -250,19 +250,7 @@ async function handleMessage(event) {
     return replyText(event.replyToken, match.reply);
   }
 
-  // --- 未判定メッセージ：未登録ならメールアドレスを聞く ---
-  const userInfo = await gasPost('getUserInfo', { lineUserId });
-  if (!userInfo.success || !userInfo.email) {
-    await Promise.all([
-      gasPost('setConversationState', { lineUserId, state: 'WAITING_EMAIL', stateData: {} }),
-      client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
-      }),
-    ]);
-    return;
-  }
-
+  // --- 未判定メッセージ ---
   await client.replyMessage(event.replyToken, {
     type: 'text',
     text: 'メッセージありがとうございます😊\nご質問内容に応じてご案内します。',
