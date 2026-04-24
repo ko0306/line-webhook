@@ -293,24 +293,47 @@ function saveInquiry(data) {
 // sendNotificationEmail（担当者へメール通知）
 // ================================================================
 function sendNotificationEmail(data) {
+  const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  const body = [
+    'OZONONIXの公式LINEにお問い合わせが届きました。',
+    '',
+    '■ 受付日時: ' + now,
+    '■ LINE ユーザーID: ' + (data.lineUserId || '不明'),
+    '■ 内容: ' + (data.message || 'お問い合わせボタンが押されました'),
+    '',
+    '▼ LINE公式アカウントマネージャーから返信してください',
+    'https://manager.line.biz/',
+  ].join('\n');
+
+  // スプレッドシートにログを記録（メール失敗時のバックアップ）
   try {
-    const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+    const ss = SpreadsheetApp.openById(SS_ID);
+    let logSheet = ss.getSheetByName('通知ログ');
+    if (!logSheet) {
+      logSheet = ss.insertSheet('通知ログ');
+      logSheet.appendRow(['日時', 'lineUserId', '内容', 'メール送信結果']);
+    }
+    logSheet.appendRow([now, data.lineUserId || '', data.message || '', '送信中...']);
+    const lastRow = logSheet.getLastRow();
+
+    // メール送信
     MailApp.sendEmail({
       to: 'joudencompany@gmail.com',
       subject: '【OZONOIX LINE】お問い合わせが届きました',
-      body: [
-        'OZONONIXの公式LINEにお問い合わせが届きました。',
-        '',
-        '■ 受付日時: ' + now,
-        '■ LINE ユーザーID: ' + (data.lineUserId || '不明'),
-        '■ 内容: ' + (data.message || 'お問い合わせボタンが押されました'),
-        '',
-        '▼ LINE公式アカウントマネージャーから返信してください',
-        'https://manager.line.biz/',
-      ].join('\n'),
+      body: body,
     });
+
+    logSheet.getRange(lastRow, 4).setValue('送信成功');
     return jsonResponse({ success: true });
   } catch (err) {
+    // ログシートに失敗を記録
+    try {
+      const ss = SpreadsheetApp.openById(SS_ID);
+      const logSheet = ss.getSheetByName('通知ログ');
+      if (logSheet) {
+        logSheet.getRange(logSheet.getLastRow(), 4).setValue('失敗: ' + err.message);
+      }
+    } catch (_) {}
     return jsonResponse({ success: false, error: err.message });
   }
 }

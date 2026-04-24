@@ -130,6 +130,12 @@ async function handleFollow(event) {
   const userId = event.source.userId;
   const service = ref === 'shift' ? 'shift' : 'other';
 
+  if (ref === 'free') {
+    await gasPost('saveUserService', { lineUserId: userId, service: 'consultation' });
+    await handleFreeConsultWelcome(event, userId);
+    return;
+  }
+
   if (ref === 'web' || ref === 'shift') {
     // replyToken期限切れ防止のため並列実行
     await Promise.all([
@@ -226,6 +232,113 @@ async function handleMessage(event) {
       return replyText(event.replyToken,
         'ご契約のお申し込みはこちらのフォームからお願いします😊\n\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。'
       );
+    // ==================== 無料相談カテゴリ ====================
+    case 'fc_shift': return handleConsultCategory(event, 'shift');
+    case 'fc_hp':    return handleConsultCategory(event, 'hp');
+    case 'fc_app':   return handleConsultCategory(event, 'app');
+    case 'fc_price': return handleConsultCategory(event, 'price');
+    case 'fc_other': return handleConsultOther(event);
+    case 'fd_staff':
+      return client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: '担当者に直接ご連絡しますか？\n担当者が確認次第、ご返信いたします😊',
+        quickReply: makeQuickReply([
+          ['はい、お願いします', 'fc_staff_yes'],
+          ['いいえ、大丈夫です', 'fc_staff_no'],
+        ]),
+      });
+    case 'fc_staff_yes': return handleConsultStaff(event, lineUserId);
+    case 'fc_staff_no':
+      return replyText(event.replyToken, '承知しました😊\n他にご質問があればキーワードを入力するか、下のメニューからお選びください。');
+
+    // --- シフトアプリ詳細 ---
+    case 'fd_shift_price':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【シフトアプリ 料金・プラン】\n\n📱 ライト（最大10名）：月額¥1,500\n📱 スタンダード（最大30名）：月額¥3,000\n📱 プレミアム（人数無制限）：月額¥5,000\n\n他社と比べて圧倒的にお得な価格でご提供しています！\n完全カスタマイズも対応可能です😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+      ]);
+    case 'fd_shift_feat':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【シフトアプリ 主な機能】\n\n✅ シフト提出・作成・承認\n✅ 勤怠打刻（出勤・退勤・休憩）\n✅ 勤務時間集計\n✅ CSV出力\n✅ プッシュ通知\n✅ 修正申請機能\n✅ 完全カスタマイズ対応\n\nお客様専用に構築するため、必要な機能だけをシンプルに実装できます😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+      ]);
+    case 'fd_shift_trial':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【無料体験について】\n\n無料トライアルのご希望はお問い合わせよりご相談ください😊\n担当者がご案内いたします。' },
+        { type: 'text', text: '担当者に直接ご連絡しますか？', quickReply: makeQuickReply([['はい', 'fc_staff_yes'], ['他の質問', 'fc_shift']]) },
+      ]);
+    case 'fd_shift_users':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【スタッフ人数について】\n\n・ライト：最大10名\n・スタンダード：最大30名\n・プレミアム：無制限\n\nスタッフ数が増えても、プラン変更で柔軟に対応できます😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+      ]);
+    case 'fd_shift_sec':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【セキュリティについて】\n\nお客様ごとに専用アプリを作成するため、部外者が干渉することはできない仕組みです🔒\nデータは世界水準のDBで暗号化して安全に管理しています。' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+      ]);
+
+    // --- HP詳細 ---
+    case 'fd_hp_price':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【HP制作 料金】\n\n¥50,000〜です。\nページ数・デザイン・機能によって異なります。まずはお気軽にご相談ください😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+      ]);
+    case 'fd_hp_period':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【HP制作 期間】\n\nご要望によって異なりますが、打ち合わせ後に目安をお伝えします。\nまずはお気軽にご相談ください😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+      ]);
+    case 'fd_hp_mobile':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【スマホ対応について】\n\nすべてのHPをスマートフォン対応（レスポンシブ）で制作しています😊\nPC・スマホ・タブレットで最適に表示されます。' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+      ]);
+    case 'fd_hp_custom':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【HP カスタマイズ】\n\nお客様のご要望に合わせて柔軟に対応します😊\nご希望のデザインや機能をお伝えください。' },
+        { type: 'text', text: '担当者に直接ご相談しますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+      ]);
+
+    // --- アプリ制作詳細 ---
+    case 'fd_app_price':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【アプリ制作 料金】\n\n¥500,000〜です。\n要件によって大きく異なります。まずはお気軽にご相談ください😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['アプリのQ&A', 'fc_app']]) },
+      ]);
+    case 'fd_app_period':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【アプリ開発 期間】\n\n・小規模：数週間〜\n・大規模：数ヶ月〜\n\n要件確認後に目安をお伝えします😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['アプリのQ&A', 'fc_app']]) },
+      ]);
+    case 'fd_app_ios':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【iOS・Android対応】\n\n両方に対応可能です😊\n要件に応じて最適な方法をご提案します。' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['アプリのQ&A', 'fc_app']]) },
+      ]);
+
+    // --- 料金詳細 ---
+    case 'fd_price_shift':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【シフトアプリ 月額料金】\n・ライト（最大10名）：¥1,500/月\n・スタンダード（最大30名）：¥3,000/月\n・プレミアム（無制限）：¥5,000/月\n\n他社と比べて圧倒的にお得です😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+      ]);
+    case 'fd_price_hp':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【HP制作 料金】\n¥50,000〜です。\nページ数・機能によって異なります😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+      ]);
+    case 'fd_price_app':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【アプリ制作 料金】\n¥500,000〜です。\n要件によって異なります😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+      ]);
+    case 'fd_price_payment':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【支払い方法】\nクレジットカードにてご契約専用サイトよりお支払いいただきます。\nご契約時に専用サイトのURLをご案内します😊' },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+      ]);
+
     case 'よくあるQ&A':
       return handleFaqTop(event);
     case '規約・プランを確認':
@@ -399,14 +512,17 @@ async function handleInquiryEmail(event, text, lineUserId, stateData) {
 }
 
 async function handleInquiryName(event, text, lineUserId, stateData) {
-  await gasPost('saveInquiry', {
-    lineUserId,
-    name: text,
-    email: stateData.email,
-    service: stateData.service,
-    details: stateData.details,
-  });
-  await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+  await Promise.all([
+    gasPost('saveInquiry', {
+      lineUserId,
+      name: text,
+      email: stateData.email,
+      service: stateData.service,
+      details: stateData.details,
+    }),
+    gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+    sendEmail(lineUserId, `LINEお問い合わせが完了しました。\nお名前：${text}\nサービス：${stateData.service}\n内容：${stateData.details}`),
+  ]);
   await client.replyMessage(event.replyToken, [
     { type: 'text', text: `${text}様、ありがとうございます！` },
     { type: 'text', text: '担当者が確認しておりますので、しばらくお待ちください。\nご連絡はいただいたメールアドレスにお送りします📧' },
@@ -462,9 +578,12 @@ async function handleEmailInput(event, email, lineUserId) {
       },
     ]);
   } else {
-    await client.replyMessage(event.replyToken, [
-      { type: 'text', text: 'ありがとうございます！確認が完了しました😊' },
-      { type: 'text', text: 'お問い合わせ内容を確認し、カウンセリングをしたいと思います。\n担当者からご連絡しますので、しばらくお待ちください。' },
+    await Promise.all([
+      client.replyMessage(event.replyToken, [
+        { type: 'text', text: 'ありがとうございます！確認が完了しました😊' },
+        { type: 'text', text: 'お問い合わせ内容を確認し、カウンセリングをしたいと思います。\n担当者からご連絡しますので、しばらくお待ちください。' },
+      ]),
+      sendEmail(lineUserId, 'メール認証完了（HP/アプリ制作）。担当者からのカウンセリング対応をお願いします。'),
     ]);
   }
 }
@@ -473,7 +592,10 @@ async function handleEmailInput(event, email, lineUserId) {
 async function handleCustomizationReply(event, text, lineUserId, stateData) {
   if (text === 'カスタマイズ_いいえ') {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
-    await client.replyMessage(event.replyToken, { type: 'text', text: 'かしこまりました！' });
+    await Promise.all([
+      client.replyMessage(event.replyToken, { type: 'text', text: 'かしこまりました！' }),
+      sendEmail(lineUserId, 'シフトアプリ契約者がカスタマイズ不要と回答しました。専用アプリの制作を開始してください。'),
+    ]);
     await sleep(1200);
     await client.pushMessage(lineUserId, { type: 'text', text: '専用のアプリを制作しています。営業日から二日以内でアプリを提供します。' });
     await sleep(1200);
@@ -488,8 +610,11 @@ async function handleCustomizationReply(event, text, lineUserId, stateData) {
 
 async function handleCustomizationDetails(event, lineUserId) {
   const customText = event.message.text;
-  await gasPost('saveCustomization', { lineUserId, content: customText });
-  await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+  await Promise.all([
+    gasPost('saveCustomization', { lineUserId, content: customText }),
+    gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+    sendEmail(lineUserId, `シフトアプリ契約者からカスタマイズ要望が届きました。内容：${customText}`),
+  ]);
   await client.replyMessage(event.replyToken, { type: 'text', text: '承知しました。ありがとうございます。' });
   await sleep(1200);
   await client.pushMessage(lineUserId, { type: 'text', text: '担当者が確認しておりますので、お待ちください。' });
@@ -702,4 +827,104 @@ async function gasPost(action, data = {}) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ==================== メール通知（ラッパー） ====================
+async function sendEmail(lineUserId, message) {
+  const result = await gasPost('sendNotificationEmail', { lineUserId, message });
+  if (!result.success) {
+    console.error('[EMAIL FAILED]', result.error, '| userId:', lineUserId, '| msg:', message);
+  }
+  return result;
+}
+
+// ==================== 無料相談フロー ====================
+async function handleFreeConsultWelcome(event, userId) {
+  await client.replyMessage(event.replyToken, {
+    type: 'text',
+    text: 'こんにちは！OZONONIXです😊\n無料相談へのご登録ありがとうございます！',
+  });
+  await sleep(1200);
+  await client.pushMessage(userId, {
+    type: 'text',
+    text: 'どのようなことについてご相談でしょうか？\nお気軽にお選びください👇',
+    quickReply: makeQuickReply([
+      ['📱 シフトアプリ', 'fc_shift'],
+      ['🌐 HP制作',       'fc_hp'],
+      ['💻 アプリ制作',   'fc_app'],
+      ['💰 料金・費用',   'fc_price'],
+      ['💬 その他',       'fc_other'],
+    ]),
+  });
+}
+
+async function handleConsultCategory(event, category) {
+  const configs = {
+    shift: {
+      title: 'シフトアプリについてのご相談ですね！\n詳しい内容をお選びください👇',
+      items: [
+        ['料金・プラン',   'fd_shift_price'],
+        ['機能について',   'fd_shift_feat'],
+        ['無料体験',       'fd_shift_trial'],
+        ['スタッフ人数',   'fd_shift_users'],
+        ['セキュリティ',   'fd_shift_sec'],
+        ['担当者に相談',   'fd_staff'],
+      ],
+    },
+    hp: {
+      title: 'HP制作についてのご相談ですね！\n詳しい内容をお選びください👇',
+      items: [
+        ['料金',           'fd_hp_price'],
+        ['制作期間',       'fd_hp_period'],
+        ['スマホ対応',     'fd_hp_mobile'],
+        ['カスタマイズ',   'fd_hp_custom'],
+        ['担当者に相談',   'fd_staff'],
+      ],
+    },
+    app: {
+      title: 'アプリ制作についてのご相談ですね！\n詳しい内容をお選びください👇',
+      items: [
+        ['料金',           'fd_app_price'],
+        ['開発期間',       'fd_app_period'],
+        ['iOS/Android',    'fd_app_ios'],
+        ['担当者に相談',   'fd_staff'],
+      ],
+    },
+    price: {
+      title: '料金・費用についてのご相談ですね！\nどのサービスについてですか？👇',
+      items: [
+        ['シフトアプリ',   'fd_price_shift'],
+        ['HP制作',         'fd_price_hp'],
+        ['アプリ制作',     'fd_price_app'],
+        ['支払い方法',     'fd_price_payment'],
+        ['担当者に相談',   'fd_staff'],
+      ],
+    },
+  };
+  const config = configs[category];
+  return client.replyMessage(event.replyToken, {
+    type: 'text',
+    text: config.title,
+    quickReply: makeQuickReply(config.items),
+  });
+}
+
+async function handleConsultOther(event) {
+  return client.replyMessage(event.replyToken, {
+    type: 'text',
+    text: 'ご相談内容をキーワードで入力していただくか、担当者に直接ご連絡することも可能です😊\n\n例：「シフト」「料金」「セキュリティ」など',
+    quickReply: makeQuickReply([
+      ['担当者に連絡する', 'fd_staff'],
+    ]),
+  });
+}
+
+async function handleConsultStaff(event, lineUserId) {
+  await Promise.all([
+    client.replyMessage(event.replyToken, [
+      { type: 'text', text: '担当者に取り次いでいます。しばらくお待ちください🙏' },
+      { type: 'text', text: '💬 対応時間：平日 10:00〜18:00\n（時間外のお問い合わせは翌営業日に対応いたします）' },
+    ]),
+    sendEmail(lineUserId, '無料相談から担当者接続が選ばれました。LINEで担当者対応をお願いします。'),
+  ]);
 }
