@@ -6,7 +6,7 @@ const config = {
 };
 const client = new Client(config);
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbx-0-gHJsGcd04U_Di-dVAjb2n2u8dJ89Ie_8YG857vL4EYfgJgpT-FiyzWQVKnr5Xy/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxe7SadlFI_VpVhK6pAAbm1s8VcqcwHRqhx8dLpuCxma63OJw7Q0in_FtPHyrVsWNKI/exec';
 
 const PLAN_INFO = {
   'ライト':       { price: 1500 },
@@ -128,80 +128,24 @@ async function handleEvent(event) {
 async function handleFollow(event) {
   const ref = event.referral?.ref;
   const userId = event.source.userId;
-  const service = ref === 'shift' ? 'shift' : 'other';
 
+  // 無料相談パターン
   if (ref === 'free') {
     await gasPost('saveUserService', { lineUserId: userId, service: 'consultation' });
     await handleFreeConsultWelcome(event, userId);
     return;
   }
 
-  if (ref === 'web' || ref === 'shift') {
-    // replyToken期限切れ防止のため並列実行
-    await Promise.all([
-      client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
-      }),
-      gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
-      gasPost('saveUserService', { lineUserId: userId, service }),
-    ]);
-    return;
-  }
-
-  await gasPost('saveUserService', { lineUserId: userId, service });
-
-  // 順々にメッセージを送信
-  await client.replyMessage(event.replyToken, { type: 'text', text: 'はじめまして！OZONONIXです😊' });
-  await sleep(1500);
-  await client.pushMessage(userId, { type: 'text', text: '友だち追加ありがとうございます！\nこのアカウントでは、弊社サービスのご紹介・お問い合わせ対応をしています。' });
-  await sleep(1500);
-  await client.pushMessage(userId, { type: 'text', text: '弊社では以下の三つのサービスを提供しています💪\n詳しい資料には、料金・発注から納品までの流れが掲載されています！' });
-  await sleep(1500);
-  await client.pushMessage(userId, {
-    type: 'text',
-    text: '🌟 特にイチオシは「シフト管理アプリ」です！\n\n✅ 完全カスタマイズ可能\n✅ 他社と比べて圧倒的に安い月額料金\n✅ お客様専用に作成するため部外者が干渉できない高いセキュリティ\n✅ シフト提出・作成・勤怠入力がすべて一括管理\n\nぜひ詳細をご覧ください👇',
-  });
-  await sleep(1500);
-  await client.pushMessage(userId, {
-    type: 'template',
-    altText: 'サービス一覧',
-    template: {
-      type: 'carousel',
-      columns: [
-        {
-          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card1_shift.png',
-          imageAspectRatio: 'rectangle', imageSize: 'cover',
-          title: 'シフト管理アプリ',
-          text: 'シフト管理・勤怠・集計まで完結 ¥1500〜',
-          actions: [
-            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product2/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
-          ],
-        },
-        {
-          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card2_hp.png',
-          imageAspectRatio: 'rectangle', imageSize: 'cover',
-          title: 'HP作成',
-          text: '丁寧なカウンセリングと高いカスタマイズ ¥50000〜',
-          actions: [
-            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product1/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
-          ],
-        },
-        {
-          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card3_app.png',
-          imageAspectRatio: 'rectangle', imageSize: 'cover',
-          title: '業務効率化アプリ制作',
-          text: 'お客様に合わせたアプリを一から制作 ¥500000〜',
-          actions: [
-            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product3/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
-          ],
-        },
-      ],
-    },
-  });
+  // それ以外（refあり・なし問わず）→ メールアドレスを聞く
+  const service = ref === 'shift' ? 'shift' : ref === 'web' ? 'web' : 'other';
+  await Promise.all([
+    client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: 'この度はOZONONIXの公式LINEにご登録いただきありがとうございます！\nセキュリティ確認のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+    }),
+    gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
+    gasPost('saveUserService', { lineUserId: userId, service }),
+  ]);
 }
 
 // ==================== メッセージ受信 ====================
