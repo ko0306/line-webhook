@@ -214,6 +214,8 @@ async function handleMessage(event) {
     case 'メール認証':
       await gasPost('setConversationState', { lineUserId, state: 'WAITING_EMAIL', stateData: {} });
       return replyText(event.replyToken, 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧');
+    case '無料相談':
+      return handleFreeConsultWelcome(event, lineUserId);
     case 'お問い合わせ開始':
       return handleInquiryContact(event, lineUserId);
     case '問合せ種別_質問':
@@ -248,8 +250,10 @@ async function handleMessage(event) {
         ]),
       });
     case 'fc_staff_yes': return handleConsultStaff(event, lineUserId);
-    case 'fc_staff_no':
-      return replyText(event.replyToken, '承知しました😊\n他にご質問があればキーワードを入力するか、下のメニューからお選びください。');
+    case 'fc_staff_no': {
+      await gasPost('setConversationState', { lineUserId, state: 'FREE_CONSULT_KEYWORD', stateData: {} });
+      return replyText(event.replyToken, 'かしこまりました😊\nご相談の内容をメッセージで教えてください。\nキーワードでも構いません。\n（例：「料金」「機能」「セキュリティ」など）');
+    }
 
     // --- シフトアプリ詳細 ---
     case 'fd_shift_price':
@@ -385,6 +389,8 @@ async function handleMessage(event) {
       return handleInquiryName(event, text, lineUserId, stateData);
     case 'WAITING_EMAIL':
       return handleEmailInput(event, text, lineUserId);
+    case 'FREE_CONSULT_KEYWORD':
+      return handleFreeConsultKeyword(event, text, lineUserId);
     default:
       if (state && state.startsWith('WAITING_INFO_CHANGE_VALUE:')) {
         return handleInfoChangeValue(event, text, lineUserId, state.split(':')[1]);
@@ -927,4 +933,60 @@ async function handleConsultStaff(event, lineUserId) {
     ]),
     sendEmail(lineUserId, '無料相談から担当者接続が選ばれました。LINEで担当者対応をお願いします。'),
   ]);
+}
+
+// ==================== キーワード自由入力 → 回答 → お問い合わせURL ====================
+async function handleFreeConsultKeyword(event, text, lineUserId) {
+  await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+
+  const contactUrl = 'https://harurururun.github.io/company-OZONONIX/contact';
+  const contactMsg = {
+    type: 'text',
+    text: '他にご不明な点がございましたらお気軽にどうぞ😊\n\n📩 お問い合わせはこちら\n' + contactUrl,
+    quickReply: makeQuickReply([
+      ['担当者に相談', 'fd_staff'],
+      ['別のカテゴリ', 'fc_other'],
+    ]),
+  };
+
+  // キーワードルールから検索
+  const keyMatch = findKeyword(text);
+  if (keyMatch) {
+    return client.replyMessage(event.replyToken, [
+      { type: 'text', text: keyMatch.reply },
+      contactMsg,
+    ]);
+  }
+
+  // FAQから検索
+  const faqMatch = findFaq(text);
+  if (faqMatch) {
+    return client.replyMessage(event.replyToken, [
+      { type: 'text', text: `【${faqMatch.q}】\n\n${faqMatch.a}` },
+      contactMsg,
+    ]);
+  }
+
+  // 何もマッチしない場合
+  return client.replyMessage(event.replyToken, [
+    { type: 'text', text: 'ご質問ありがとうございます😊\nいただいた内容については担当者が詳しくご案内いたします。' },
+    contactMsg,
+  ]);
+}
+
+function findFaq(text) {
+  const t = text.toLowerCase().replace(/\s/g, '');
+  for (const items of Object.values(FAQ_DATA)) {
+    for (const item of items) {
+      const words = item.q.toLowerCase().replace(/[・。、\s]/g, '').split('');
+      // 2文字以上の連続部分が一致すれば候補とする
+      for (let i = 0; i < t.length - 1; i++) {
+        const chunk = t.slice(i, i + 2);
+        if (item.q.toLowerCase().includes(chunk) || item.a.toLowerCase().includes(chunk)) {
+          return item;
+        }
+      }
+    }
+  }
+  return null;
 }
