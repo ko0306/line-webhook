@@ -8,6 +8,9 @@ const client = new Client(config);
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxe7SadlFI_VpVhK6pAAbm1s8VcqcwHRqhx8dLpuCxma63OJw7Q0in_FtPHyrVsWNKI/exec';
 
+// ★ 社内グループBotのGAS WebアプリURL（task-bot-gas.jsをデプロイした後に設定）
+const INTERNAL_BOT_GAS_URL = process.env.INTERNAL_BOT_GAS_URL || '';
+
 const PLAN_INFO = {
   'ライト':       { price: 1500 },
   'スタンダード': { price: 3000 },
@@ -163,17 +166,29 @@ async function handleMessage(event) {
     case 'お問い合わせ開始':
       return handleInquiryContact(event, lineUserId);
     case '問合せ種別_質問':
+      return client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'ご質問・ご相談の対応方法をお選びください😊',
+        quickReply: makeQuickReply([
+          ['担当者に直接相談', '問合せ対応_担当者'],
+          ['キーワードで自動回答', '問合せ対応_キーワード'],
+        ]),
+      });
+    case '問合せ対応_担当者':
       await Promise.all([
         client.replyMessage(event.replyToken, [
           { type: 'text', text: '担当者に繋ぎます！\nこちらに直接メッセージをお送りください😊\n担当者が確認次第、返信いたします。' },
           { type: 'text', text: '💬 対応時間：平日 10:00〜18:00' },
         ]),
-        gasPost('sendNotificationEmail', {
-          lineUserId,
-          message: 'お問い合わせ（ご質問・ご相談）のボタンが押されました。LINEで担当者対応をお願いします。',
+        sendEmail(lineUserId, 'お問い合わせ（ご質問・ご相談）から担当者対応が選ばれました。LINEで担当者対応をお願いします。'),
+        notifyInternalGroup('inquiry_keyword', {
+          message: 'お問い合わせから「担当者に直接相談」が選択されました。公式LINEアプリから対応してください。',
         }),
       ]);
       return;
+    case '問合せ対応_キーワード':
+      await gasPost('setConversationState', { lineUserId, state: 'FREE_CONSULT_KEYWORD', stateData: {} });
+      return replyText(event.replyToken, 'ご相談の内容をキーワードで入力してください。\n（例：「料金」「機能」「セキュリティ」など）');
     case '問合せ種別_契約':
       return replyText(event.replyToken,
         'ご契約のお申し込みはこちらのフォームからお願いします😊\n\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。'
@@ -462,6 +477,7 @@ async function handleInquiryEmail(event, text, lineUserId, stateData) {
 }
 
 async function handleInquiryName(event, text, lineUserId, stateData) {
+  const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
   await Promise.all([
     gasPost('saveInquiry', {
       lineUserId,
@@ -472,6 +488,16 @@ async function handleInquiryName(event, text, lineUserId, stateData) {
     }),
     gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
     sendEmail(lineUserId, `LINEお問い合わせが完了しました。\nお名前：${text}\nサービス：${stateData.service}\n内容：${stateData.details}`),
+    // 社内グループへ全内容通知
+    notifyInternalGroup('inquiry_full', {
+      detail: {
+        name: text,
+        email: stateData.email,
+        service: stateData.service,
+        content: stateData.details,
+        time: now,
+      },
+    }),
   ]);
   await client.replyMessage(event.replyToken, [
     { type: 'text', text: `${text}様、ありがとうございます！` },
@@ -788,6 +814,21 @@ async function sendEmail(lineUserId, message) {
   return result;
 }
 
+// ==================== 社内グループ通知 ====================
+// type: 'inquiry_full'（お問い合わせ全内容）or 'inquiry_keyword'（担当者接続キーワード）
+async function notifyInternalGroup(type, payload) {
+  if (!INTERNAL_BOT_GAS_URL) return;
+  try {
+    await fetch(INTERNAL_BOT_GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _source: 'official_line', type, ...payload }),
+    });
+  } catch (err) {
+    console.error('[INTERNAL NOTIFY FAILED]', err.message);
+  }
+}
+
 // ==================== 無料相談フロー ====================
 async function handleFreeConsultWelcome(event, userId) {
   await client.replyMessage(event.replyToken, {
@@ -876,6 +917,10 @@ async function handleConsultStaff(event, lineUserId) {
       { type: 'text', text: '💬 対応時間：平日 10:00〜18:00\n（時間外のお問い合わせは翌営業日に対応いたします）' },
     ]),
     sendEmail(lineUserId, '無料相談から担当者接続が選ばれました。LINEで担当者対応をお願いします。'),
+    // 社内グループへキーワード通知（無料相談から担当者接続）
+    notifyInternalGroup('inquiry_keyword', {
+      message: '無料相談から「担当者に繋ぐ」が選択されました。公式LINEアプリから対応してください。',
+    }),
   ]);
 }
 
