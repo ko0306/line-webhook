@@ -672,8 +672,12 @@ async function handleInfoFieldSelect(event, text, lineUserId) {
 }
 
 async function handleInfoChangeValue(event, text, lineUserId, field) {
-  await gasPost('updateUserInfo', { lineUserId, field, value: text });
-  await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+  const fieldLabel = { email: 'メールアドレス', budget: 'ご予算' }[field] || field;
+  await Promise.all([
+    gasPost('updateUserInfo', { lineUserId, field, value: text }),
+    gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+    sendEmail(lineUserId, `契約情報が変更されました。\n変更項目: ${fieldLabel}\n新しい値: ${text}`),
+  ]);
   return replyText(event.replyToken, '情報を更新しました。変更内容は担当者が確認いたします。');
 }
 
@@ -735,6 +739,7 @@ async function handlePlanChangeConfirm(event, text, lineUserId, stateData) {
     const result = await gasPost('changePlan', { lineUserId, newPlan: stateData.newPlan });
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
     if (result.success) {
+      await sendEmail(lineUserId, `プランが変更されました。\n変更前: ${stateData.currentPlan}\n変更後: ${stateData.newPlan}\n翌月より新プランが適用されます。`);
       return replyText(event.replyToken, `プランを「${stateData.newPlan}」に変更しました。\n翌月より新プランが適用されます。`);
     } else if (result.reason === 'too_soon') {
       return replyText(event.replyToken, `プラン変更は2ヶ月に1度のみ可能です。\n次回変更可能日: ${result.nextAvailable}`);
@@ -759,8 +764,11 @@ async function handleWithdrawConfirm(event, text, lineUserId) {
     return replyText(event.replyToken, '退会をキャンセルしました。ご利用ありがとうございます。');
   }
   if (text === '退会する') {
-    await gasPost('withdraw', { lineUserId });
-    await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+    await Promise.all([
+      gasPost('withdraw', { lineUserId }),
+      gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+      sendEmail(lineUserId, `退会処理が完了しました。\nLINEユーザーID: ${lineUserId}\n対応が必要な場合はご確認ください。`),
+    ]);
     return replyText(event.replyToken, '退会処理が完了しました。\nご利用いただきありがとうございました。');
   }
 }
