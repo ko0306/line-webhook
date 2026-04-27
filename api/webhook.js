@@ -132,6 +132,21 @@ async function handleFollow(event) {
   const ref = event.referral?.ref;
   const userId = event.source.userId;
 
+  // 既存ユーザー確認（ブロック解除・再登録対応）
+  const userInfo = await gasPost('getUserInfo', { lineUserId: userId });
+  if (userInfo.success) {
+    await Promise.all([
+      client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'おかえりなさい！OZONONIXです😊
+以前ご登録いただいたことがあります。
+セキュリティ確認のため、ご登録時のメールアドレスを教えてください📧',
+      }),
+      gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
+    ]);
+    return;
+  }
+
   // 無料相談パターン
   if (ref === 'free') {
     await gasPost('saveUserService', { lineUserId: userId, service: 'consultation' });
@@ -660,7 +675,13 @@ async function handlePlanCheck(event) {
     budget ? `💰 ご予算: ${budget}` : '',
   ].filter(Boolean).join('\n');
 
-  const agreementsText = '【同意事項】\n・個人情報保護方針\n・特定商取引法に基づく表記\n・利用規約\n\n各規約の詳細はWebサイトをご確認ください。';
+  const agreementsText = '【同意事項・規約】
+・個人情報保護方針
+・特定商取引法に基づく表記
+・利用規約
+
+詳細はこちらよりご確認ください👇
+https://harurururun.github.io/company-OZONONIX/contact';
 
   const options = [
     ['情報変更', '情報変更'],
