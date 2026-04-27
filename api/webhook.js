@@ -132,6 +132,19 @@ async function handleFollow(event) {
   const ref = event.referral?.ref;
   const userId = event.source.userId;
 
+  // 既存ユーザー確認（ブロック解除・再登録対応）
+  const userInfo = await gasPost('getUserInfo', { lineUserId: userId });
+  if (userInfo.success) {
+    await Promise.all([
+      client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'おかえりなさい！OZONONIXです😊\n以前ご登録いただいたことがあります。\nセキュリティ確認のため、ご登録時のメールアドレスを教えてください📧',
+      }),
+      gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
+    ]);
+    return;
+  }
+
   // 無料相談パターン
   if (ref === 'free') {
     await gasPost('saveUserService', { lineUserId: userId, service: 'consultation' });
@@ -145,8 +158,7 @@ async function handleFollow(event) {
     await Promise.all([
       client.replyMessage(event.replyToken, {
         type: 'text',
-        text: 'この度はOZONONIXの公式LINEにご登録いただきありがとうございます！
-セキュリティ確認のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+        text: 'この度はOZONONIXの公式LINEにご登録いただきありがとうございます！\nセキュリティ確認のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
       }),
       gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
       gasPost('saveUserService', { lineUserId: userId, service }),
@@ -159,31 +171,15 @@ async function handleFollow(event) {
   await client.replyMessage(event.replyToken, [
     {
       type: 'text',
-      text: 'こんにちは！OZONONIXです😊
-ご登録いただきありがとうございます！
-
-ビジネスに役立つ3つのサービスを提供しています。',
+      text: 'こんにちは！OZONONIXです😊\nご登録いただきありがとうございます！\n\nビジネスに役立つ3つのサービスを提供しています。',
     },
     {
       type: 'text',
-      text: '【OZONONIXのサービス】
-
-📱 シフト管理アプリ
-スタッフのシフト・勤怠管理がスマホで完結！
-月額¥1,500〜
-
-🌐 HP作成
-丁寧なカウンセリングで理想のHPを制作！
-¥50,000〜
-
-💻 業務効率化アプリ制作
-お客様専用のアプリをゼロから制作！
-¥500,000〜',
+      text: '【OZONONIXのサービス】\n\n📱 シフト管理アプリ\nスタッフのシフト・勤怠管理がスマホで完結！\n月額¥1,500〜\n\n🌐 HP作成\n丁寧なカウンセリングで理想のHPを制作！\n¥50,000〜\n\n💻 業務効率化アプリ制作\nお客様専用のアプリをゼロから制作！\n¥500,000〜',
     },
     {
       type: 'text',
-      text: 'ご興味のあるサービスや、ご不明な点はお気軽にどうぞ😊
-下のメニューからもご利用いただけます。',
+      text: 'ご興味のあるサービスや、ご不明な点はお気軽にどうぞ😊\n下のメニューからもご利用いただけます。',
       quickReply: makeQuickReply([
         ['無料相談', '無料相談'],
         ['よくあるQ&A', 'よくあるQ&A'],
@@ -660,7 +656,7 @@ async function handlePlanCheck(event) {
     budget ? `💰 ご予算: ${budget}` : '',
   ].filter(Boolean).join('\n');
 
-  const agreementsText = '【同意事項】\n・個人情報保護方針\n・特定商取引法に基づく表記\n・利用規約\n\n各規約の詳細はWebサイトをご確認ください。';
+  const agreementsText = '【同意事項・規約】\n・個人情報保護方針\n・特定商取引法に基づく表記\n・利用規約\n\n詳細はこちらよりご確認ください👇\nhttps://harurururun.github.io/company-OZONONIX/contact';
 
   const options = [
     ['情報変更', '情報変更'],
