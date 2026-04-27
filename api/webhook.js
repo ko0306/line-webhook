@@ -139,15 +139,57 @@ async function handleFollow(event) {
     return;
   }
 
-  // それ以外（refあり・なし問わず）→ メールアドレスを聞く
-  const service = ref === 'shift' ? 'shift' : ref === 'web' ? 'web' : 'other';
-  await Promise.all([
-    client.replyMessage(event.replyToken, {
+  // お問い合わせフォームからの登録（shift/web）→ メールアドレスを聞く
+  if (ref === 'shift' || ref === 'web') {
+    const service = ref === 'shift' ? 'shift' : 'web';
+    await Promise.all([
+      client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: 'この度はOZONONIXの公式LINEにご登録いただきありがとうございます！
+セキュリティ確認のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+      }),
+      gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
+      gasPost('saveUserService', { lineUserId: userId, service }),
+    ]);
+    return;
+  }
+
+  // 普通の登録（refなし・その他）→ 挨拶 + サービス紹介
+  await gasPost('saveUserService', { lineUserId: userId, service: 'other' });
+  await client.replyMessage(event.replyToken, [
+    {
       type: 'text',
-      text: 'この度はOZONONIXの公式LINEにご登録いただきありがとうございます！\nセキュリティ確認のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
-    }),
-    gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
-    gasPost('saveUserService', { lineUserId: userId, service }),
+      text: 'こんにちは！OZONONIXです😊
+ご登録いただきありがとうございます！
+
+ビジネスに役立つ3つのサービスを提供しています。',
+    },
+    {
+      type: 'text',
+      text: '【OZONONIXのサービス】
+
+📱 シフト管理アプリ
+スタッフのシフト・勤怠管理がスマホで完結！
+月額¥1,500〜
+
+🌐 HP作成
+丁寧なカウンセリングで理想のHPを制作！
+¥50,000〜
+
+💻 業務効率化アプリ制作
+お客様専用のアプリをゼロから制作！
+¥500,000〜',
+    },
+    {
+      type: 'text',
+      text: 'ご興味のあるサービスや、ご不明な点はお気軽にどうぞ😊
+下のメニューからもご利用いただけます。',
+      quickReply: makeQuickReply([
+        ['無料相談', '無料相談'],
+        ['よくあるQ&A', 'よくあるQ&A'],
+        ['お問い合わせ', 'お問い合わせ開始'],
+      ]),
+    },
   ]);
 }
 
