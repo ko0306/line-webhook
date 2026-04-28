@@ -6,10 +6,7 @@
       "maxDuration": 60
     }
   },
-  "routes": [
-    { "src": "/liff", "dest": "/public/liff.html" },
-    { "src": "/card1_shift.png", "dest": "/public/card1_shift.png" },
-    { "src": "/card2_hp.png", "dest": "/public/card2_hp.png" },
-    { "src": "/card3_app.png", "dest": "/public/card3_app.png" }
+  "rewrites": [
+    { "source": "/liff", "destination": "/public/liff.html" }
   ]
 }
