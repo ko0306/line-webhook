@@ -8,8 +8,8 @@ const client = new Client(config);
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxe7SadlFI_VpVhK6pAAbm1s8VcqcwHRqhx8dLpuCxma63OJw7Q0in_FtPHyrVsWNKI/exec';
 
-// ★ 社内グループBotのGAS WebアプリURL（task-bot-gas.jsをデプロイした後に設定）
-const INTERNAL_BOT_GAS_URL = process.env.INTERNAL_BOT_GAS_URL || '';
+const INTERNAL_BOT_TOKEN = process.env.INTERNAL_BOT_TOKEN || '';
+const INTERNAL_GROUP_ID  = 'C4bfc1aee984b5f5e350dc8423885ce96';
 
 const PLAN_INFO = {
   'ライト':       { price: 1500 },
@@ -894,12 +894,19 @@ async function sendEmail(lineUserId, message) {
 // ==================== 社内グループ通知 ====================
 // type: 'inquiry_full'（お問い合わせ全内容）or 'inquiry_keyword'（担当者接続キーワード）
 async function notifyInternalGroup(type, payload) {
-  if (!INTERNAL_BOT_GAS_URL) return;
+  if (!INTERNAL_BOT_TOKEN) return;
+  let msg = '';
+  if (type === 'inquiry_keyword') {
+    msg = `🔔【公式LINE 担当者接続依頼】\n─────────────────\n${payload.message || ''}\n🕐 受付：${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}\n👉 公式LINEアプリから対応してください`;
+  } else if (type === 'inquiry_full') {
+    msg = `📩【公式LINE お問い合わせ】\n─────────────────\n📛 氏名：${payload.name || '未入力'}\n📧 メール：${payload.email || '未入力'}\n📦 サービス：${payload.service || '未入力'}\n📝 内容：${payload.content || ''}\n🕐 受付：${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}\n─────────────────\n👉 公式LINEアプリから返信してください`;
+  }
+  if (!msg) return;
   try {
-    await fetch(INTERNAL_BOT_GAS_URL, {
+    await fetch('https://api.line.me/v2/bot/message/push', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _source: 'official_line', type, ...payload }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${INTERNAL_BOT_TOKEN}` },
+      body: JSON.stringify({ to: INTERNAL_GROUP_ID, messages: [{ type: 'text', text: msg }] }),
     });
   } catch (err) {
     console.error('[INTERNAL NOTIFY FAILED]', err.message);
