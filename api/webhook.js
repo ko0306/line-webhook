@@ -166,27 +166,58 @@ async function handleFollow(event) {
     return;
   }
 
-  // 普通の登録（refなし・その他）→ 挨拶 + サービス紹介
+  // 普通の登録（refなし・その他）→ 挨拶 + カルーセル
   await gasPost('saveUserService', { lineUserId: userId, service: 'other' });
-  await client.replyMessage(event.replyToken, [
-    {
-      type: 'text',
-      text: 'こんにちは！OZONONIXです😊\nご登録いただきありがとうございます！\n\nビジネスに役立つ3つのサービスを提供しています。',
+  await client.replyMessage(event.replyToken, { type: 'text', text: 'はじめまして！OZONONIXです😊' });
+  await sleep(1500);
+  await client.pushMessage(userId, { type: 'text', text: '友だち追加ありがとうございます！\nこのアカウントでは、弊社サービスのご紹介・お問い合わせ対応をしています。' });
+  await sleep(1500);
+  await client.pushMessage(userId, { type: 'text', text: '弊社では以下の三つのサービスを提供しています💪\n詳しい資料には、料金・発注から納品までの流れが掲載されています！' });
+  await sleep(1500);
+  await client.pushMessage(userId, {
+    type: 'text',
+    text: '🌟 特にイチオシは「シフト管理アプリ」です！\n\n✅ 完全カスタマイズ可能\n✅ 他社と比べて圧倒的に安い月額料金\n✅ お客様専用に作成するため部外者が干渉できない高いセキュリティ\n✅ シフト提出・作成・勤怠入力がすべて一括管理\n\nぜひ詳細をご覧ください👇',
+  });
+  await sleep(1500);
+  await client.pushMessage(userId, {
+    type: 'template',
+    altText: 'サービス一覧',
+    template: {
+      type: 'carousel',
+      columns: [
+        {
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card1_shift.png',
+          imageAspectRatio: 'rectangle', imageSize: 'cover',
+          title: 'シフト管理アプリ',
+          text: 'シフト管理・勤怠・集計まで完結 ¥1500〜',
+          actions: [
+            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product2/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
+          ],
+        },
+        {
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card2_hp.png',
+          imageAspectRatio: 'rectangle', imageSize: 'cover',
+          title: 'HP作成',
+          text: '丁寧なカウンセリングと高いカスタマイズ ¥50000〜',
+          actions: [
+            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product1/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
+          ],
+        },
+        {
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card3_app.png',
+          imageAspectRatio: 'rectangle', imageSize: 'cover',
+          title: '業務効率化アプリ制作',
+          text: 'お客様に合わせたアプリを一から制作 ¥500000〜',
+          actions: [
+            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product3/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
+          ],
+        },
+      ],
     },
-    {
-      type: 'text',
-      text: '【OZONONIXのサービス】\n\n📱 シフト管理アプリ\nスタッフのシフト・勤怠管理がスマホで完結！\n月額¥1,500〜\n\n🌐 HP作成\n丁寧なカウンセリングで理想のHPを制作！\n¥50,000〜\n\n💻 業務効率化アプリ制作\nお客様専用のアプリをゼロから制作！\n¥500,000〜',
-    },
-    {
-      type: 'text',
-      text: 'ご興味のあるサービスや、ご不明な点はお気軽にどうぞ😊\n下のメニューからもご利用いただけます。',
-      quickReply: makeQuickReply([
-        ['無料相談', '無料相談'],
-        ['よくあるQ&A', 'よくあるQ&A'],
-        ['お問い合わせ', 'お問い合わせ開始'],
-      ]),
-    },
-  ]);
+  });
 }
 
 // ==================== メッセージ受信 ====================
