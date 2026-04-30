@@ -132,6 +132,11 @@ async function handleFollow(event) {
   const ref = event.referral?.ref;
   const userId = event.source.userId;
 
+  // 社内グループへ通知（fire-and-forget）
+  notifyInternalGroup('new_follow', {
+    message: `ユーザーID：${userId}${ref ? `\n流入元：${ref}` : ''}`,
+  }).catch(() => {});
+
   // 既存ユーザー確認（ブロック解除・再登録対応）
   const userInfo = await gasPost('getUserInfo', { lineUserId: userId });
   if (userInfo.success) {
@@ -224,6 +229,11 @@ async function handleFollow(event) {
 async function handleMessage(event) {
   const text = event.message.text.trim();
   const lineUserId = event.source.userId;
+
+  // 全メッセージを社内グループへ通知（fire-and-forget）
+  notifyInternalGroup('new_message', {
+    message: `送信者ID：${lineUserId}\nメッセージ：${text}`,
+  }).catch(() => {});
 
   // --- 固定テキスト ---
   switch (text) {
@@ -892,24 +902,40 @@ async function sendEmail(lineUserId, message) {
 }
 
 // ==================== 社内グループ通知 ====================
-// type: 'inquiry_full'（お問い合わせ全内容）or 'inquiry_keyword'（担当者接続キーワード）
 async function notifyInternalGroup(type, payload) {
-  if (!INTERNAL_BOT_TOKEN) return;
-  let msg = '';
-  if (type === 'inquiry_keyword') {
-    msg = `🔔【公式LINE 担当者接続依頼】\n─────────────────\n${payload.message || ''}\n🕐 受付：${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}\n👉 公式LINEアプリから対応してください`;
-  } else if (type === 'inquiry_full') {
-    msg = `📩【公式LINE お問い合わせ】\n─────────────────\n📛 氏名：${payload.name || '未入力'}\n📧 メール：${payload.email || '未入力'}\n📦 サービス：${payload.service || '未入力'}\n📝 内容：${payload.content || ''}\n🕐 受付：${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}\n─────────────────\n👉 公式LINEアプリから返信してください`;
+  if (!INTERNAL_BOT_TOKEN) {
+    console.error('[INTERNAL NOTIFY] INTERNAL_BOT_TOKEN が未設定です');
+    return { ok: false, error: 'TOKEN_NOT_SET' };
   }
-  if (!msg) return;
+  let msg = '';
+  const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+  if (type === 'inquiry_keyword') {
+    msg = `🔔【公式LINE 担当者接続依頼】\n─────────────────\n${payload.message || ''}\n🕐 受付：${now}\n👉 公式LINEアプリから対応してください`;
+  } else if (type === 'inquiry_full') {
+    const d = payload.detail || payload;
+    msg = `📩【公式LINE お問い合わせ】\n─────────────────\n📛 氏名：${d.name || '未入力'}\n📧 メール：${d.email || '未入力'}\n📦 サービス：${d.service || '未入力'}\n📝 内容：${d.content || ''}\n🕐 受付：${now}\n─────────────────\n👉 公式LINEアプリから返信してください`;
+  } else if (type === 'new_message') {
+    msg = `💬【公式LINE 新着メッセージ】\n─────────────────\n${payload.message || ''}\n🕐 ${now}\n👉 公式LINEアプリから返信してください`;
+  } else if (type === 'new_follow') {
+    msg = `👤【公式LINE 新規友達追加】\n─────────────────\n${payload.message || '新しいユーザーが友達追加しました'}\n🕐 ${now}`;
+  }
+  if (!msg) return { ok: false, error: 'UNKNOWN_TYPE' };
   try {
-    await fetch('https://api.line.me/v2/bot/message/push', {
+    const res = await fetch('https://api.line.me/v2/bot/message/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${INTERNAL_BOT_TOKEN}` },
       body: JSON.stringify({ to: INTERNAL_GROUP_ID, messages: [{ type: 'text', text: msg }] }),
     });
+    const resBody = await res.json();
+    if (!res.ok) {
+      console.error('[INTERNAL NOTIFY FAILED]', res.status, JSON.stringify(resBody));
+      return { ok: false, status: res.status, body: resBody };
+    }
+    console.log('[INTERNAL NOTIFY OK]', type);
+    return { ok: true };
   } catch (err) {
-    console.error('[INTERNAL NOTIFY FAILED]', err.message);
+    console.error('[INTERNAL NOTIFY ERROR]', err.message);
+    return { ok: false, error: err.message };
   }
 }
 
