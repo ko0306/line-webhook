@@ -74,9 +74,9 @@ function makeLiffButton(label, page, altText) {
 // コマンド処理
 // ================================================================
 const COMMANDS = {
-  'タスク追加': { label: '📝 タスクを追加する', page: 'add' },
-  'タスク確認': { label: '📋 タスク一覧を見る', page: 'list' },
-  'タスク一覧': { label: '📋 タスク一覧を見る', page: 'list' },
+  'タスク追加': { label: '📝 タスクを追加する', page: 'task-add' },
+  'タスク確認': { label: '📋 タスク一覧を見る', page: 'task-list' },
+  'タスク一覧': { label: '📋 タスク一覧を見る', page: 'task-list' },
   '罰金':       { label: '💰 罰金を確認・追加する', page: 'penalty' },
   '質問':       { label: '❓ 質問を送る', page: 'question' },
   'メニュー':   { label: '🏠 メニューを開く', page: 'menu' },
