@@ -56,6 +56,12 @@ textarea{height:80px;resize:none}
 </head>
 <body>
 
+<!-- ローディング -->
+<div id="loading" style="text-align:center;padding:60px 20px;color:#888">
+  <div style="font-size:36px;margin-bottom:12px">⌛</div>
+  <div style="font-size:14px">読み込み中...</div>
+</div>
+
 <!-- メニュー -->
 <div id="page-menu" class="page">
   <div class="header" style="background:#37474F">📱 OZONOIX タスク管理</div>
@@ -329,8 +335,29 @@ function sendQuestion() {
   setTimeout(function() { loadQuestions(); }, 3000);
 }
 
+// URLパラメータ検出（liff.stateにも対応）
+function detectPage() {
+  var params = new URLSearchParams(window.location.search);
+  var page = params.get('page');
+  if (!page) {
+    var liffState = params.get('liff.state');
+    if (liffState) {
+      var sp = new URLSearchParams(liffState.replace(/^\?/, ''));
+      page = sp.get('page');
+    }
+  }
+  return page || initPage || 'menu';
+}
+
 // 初期化
 (function init() {
+  var targetPage = detectPage();
+
+  function showApp() {
+    document.getElementById('loading').style.display = 'none';
+    showPage(targetPage);
+  }
+
   try {
     liff.init({ liffId: LIFF_ID })
       .then(function() {
@@ -340,13 +367,13 @@ function sendQuestion() {
               uid = profile.userId;
               try { localStorage.setItem('oz_uid', uid); } catch(e) {}
             }
-          });
+          }).catch(function() {});
         }
       })
       .catch(function() {})
-      .then(function() { showPage(initPage); });
+      .then(function() { showApp(); });
   } catch(e) {
-    showPage(initPage);
+    showApp();
   }
 })();
 </script>
@@ -359,6 +386,6 @@ module.exports = (req, res) => {
   const uid = req.query.uid || '';
   const html = buildHTML(page, uid);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.status(200).send(html);
 };
