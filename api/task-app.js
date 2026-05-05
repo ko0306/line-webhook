@@ -14,7 +14,7 @@ const MEMBERS = {
 function buildHTML(initialPage, initialUid) {
   const memberOptions = Object.entries(MEMBERS)
     .map(([id, name]) => `<option value="${id}">${name}</option>`)
-    .join('');
+    .join(''); // タスク追加・罰金・質問フォームで使用
 
   const today = new Date().toLocaleDateString('ja-JP', {
     timeZone: 'Asia/Tokyo',
@@ -56,20 +56,9 @@ textarea{height:80px;resize:none}
 </head>
 <body>
 
-<!-- ユーザー選択 -->
-<div id="page-select-user" style="display:none">
-  <div class="header" style="background:#37474F">📱 OZONOIX タスク管理</div>
-  <div class="card" style="margin-top:16px">
-    <div style="font-size:14px;color:#555;margin-bottom:10px">あなたは誰ですか？</div>
-    <select id="memberSelect">${memberOptions}</select>
-    <button class="btn btn-blue" onclick="setUser()">決定</button>
-  </div>
-</div>
-
 <!-- メニュー -->
 <div id="page-menu" class="page">
   <div class="header" style="background:#37474F">📱 OZONOIX タスク管理</div>
-  <div id="menu-username" style="text-align:center;font-size:13px;color:#888;padding:8px"></div>
   <div class="card">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <button class="btn btn-blue" style="margin:0" onclick="showPage('task-add')">📋<br>タスク追加</button>
@@ -77,7 +66,6 @@ textarea{height:80px;resize:none}
       <button class="btn btn-red"  style="margin:0" onclick="showPage('penalty')">💰<br>罰金管理</button>
       <button class="btn btn-orange" style="margin:0" onclick="showPage('question')">❓<br>質問</button>
     </div>
-    <button class="btn btn-grey" style="margin-top:14px;font-size:13px" onclick="changeUser()">別のユーザーに切り替え</button>
   </div>
 </div>
 
@@ -154,21 +142,6 @@ function showPage(name) {
   if (name === 'task-list') loadTasks();
   if (name === 'penalty') loadPenalties();
   if (name === 'question') loadQuestions();
-}
-
-function setUser() {
-  uid = document.getElementById('memberSelect').value;
-  try { localStorage.setItem('oz_uid', uid); } catch(e) {}
-  document.getElementById('page-select-user').style.display = 'none';
-  showPage('menu');
-  document.getElementById('menu-username').textContent = 'ログイン中：' + MEMBERS[uid];
-}
-
-function changeUser() {
-  try { localStorage.removeItem('oz_uid'); } catch(e) {}
-  uid = '';
-  document.querySelectorAll('.page').forEach(function(p) { p.style.display = 'none'; });
-  document.getElementById('page-select-user').style.display = 'block';
 }
 
 function showToast(msg) {
@@ -358,20 +331,6 @@ function sendQuestion() {
 
 // 初期化
 (function init() {
-  if (!uid) {
-    try { uid = localStorage.getItem('oz_uid') || ''; } catch(e) { uid = ''; }
-  }
-
-  function showApp() {
-    if (!uid || !MEMBERS[uid]) {
-      document.getElementById('page-select-user').style.display = 'block';
-    } else {
-      document.getElementById('page-select-user').style.display = 'none';
-      document.getElementById('menu-username').textContent = 'ログイン中：' + MEMBERS[uid];
-      showPage(initPage);
-    }
-  }
-
   try {
     liff.init({ liffId: LIFF_ID })
       .then(function() {
@@ -385,9 +344,9 @@ function sendQuestion() {
         }
       })
       .catch(function() {})
-      .then(function() { showApp(); });
+      .then(function() { showPage(initPage); });
   } catch(e) {
-    showApp();
+    showPage(initPage);
   }
 })();
 </script>
