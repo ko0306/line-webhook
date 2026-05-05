@@ -57,7 +57,7 @@ textarea{height:80px;resize:none}
 <body>
 
 <!-- ユーザー選択 -->
-<div id="page-select-user">
+<div id="page-select-user" style="display:none">
   <div class="header" style="background:#37474F">📱 OZONOIX タスク管理</div>
   <div class="card" style="margin-top:16px">
     <div style="font-size:14px;color:#555;margin-bottom:10px">あなたは誰ですか？</div>
@@ -372,19 +372,23 @@ function sendQuestion() {
     }
   }
 
-  liff.init({ liffId: LIFF_ID })
-    .then(function() {
-      if (liff.isLoggedIn()) {
-        return liff.getProfile().then(function(profile) {
-          if (MEMBERS[profile.userId]) {
-            uid = profile.userId;
-            try { localStorage.setItem('oz_uid', uid); } catch(e) {}
-          }
-        });
-      }
-    })
-    .catch(function() {})
-    .then(function() { showApp(); });
+  try {
+    liff.init({ liffId: LIFF_ID })
+      .then(function() {
+        if (liff.isLoggedIn()) {
+          return liff.getProfile().then(function(profile) {
+            if (MEMBERS[profile.userId]) {
+              uid = profile.userId;
+              try { localStorage.setItem('oz_uid', uid); } catch(e) {}
+            }
+          });
+        }
+      })
+      .catch(function() {})
+      .then(function() { showApp(); });
+  } catch(e) {
+    showApp();
+  }
 })();
 </script>
 </body>
