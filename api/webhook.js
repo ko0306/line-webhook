@@ -223,6 +223,17 @@ async function handleFollow(event) {
       ],
     },
   });
+  await sleep(1500);
+  await client.pushMessage(userId, {
+    type: 'text',
+    text: 'すでにウェブよりお問い合わせいただいた方は、こちらからメールアドレスをご確認ください👇',
+    quickReply: {
+      items: [{
+        type: 'action',
+        action: { type: 'message', label: 'お問い合わせ済みの方', text: 'メール認証' },
+      }],
+    },
+  });
 }
 
 // ==================== メッセージ受信 ====================
