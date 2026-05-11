@@ -184,7 +184,8 @@
           }
         })
         .catch(err => {
-          document.getElementById('loading-msg').textContent = 'エラーが発生しました。LINEを開いて操作してください。';
+          const msg = err.message || JSON.stringify(err);
+          document.getElementById('loading-msg').textContent = '[ERR] ' + msg;
           console.error(err);
         });
     }
