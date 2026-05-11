@@ -100,13 +100,15 @@
     // チャットコンテキストがある場合は自動送信、ない場合はOAチャットへ誘導
     async function autoSendOrOpen(text) {
       const context = liff.getContext();
-      const hasChatContext = context && context.type !== 'none';
+      // sendMessages() が使えるのはチャット内（utou/room/group/square_chat）のみ
+      const CHAT_TYPES = ['utou', 'room', 'group', 'square_chat'];
+      const hasChatContext = context && CHAT_TYPES.includes(context.type);
 
       if (hasChatContext) {
         await liff.sendMessages([{ type: 'text', text }]);
         liff.closeWindow();
       } else {
-        // LINE外から開いた場合 → OAチャットを開いてテキストをセット
+        // チャット外（ホーム・通知・外部ブラウザ）→ OAチャットを開いてテキストをセット
         window.location.href =
           `https://line.me/R/oaMessage/%40${OA_ID}?text=${encodeURIComponent(text)}`;
       }
