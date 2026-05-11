@@ -97,20 +97,16 @@
         .catch(err => alert('エラーが発生しました: ' + err.message));
     }
 
-    // 公式LINEの1対1チャットのみ自動送信、それ以外は公式LINEチャットへ誘導
-    async function autoSendOrOpen(text) {
-      const context = liff.getContext();
-      // utou（1対1）のみ自動送信。グループ・トーク室は公式LINEへ誘導する
-      const isDirectChat = context && context.type === 'utou';
-
-      if (isDirectChat) {
-        await liff.sendMessages([{ type: 'text', text }]);
-        liff.closeWindow();
-      } else {
-        // グループ・ホーム・外部ブラウザ → 公式LINEの1対1チャットを開く
-        window.location.href =
-          `https://line.me/R/oaMessage/%40${OA_ID}?text=${encodeURIComponent(text)}`;
-      }
+    // サーバー経由でpushメッセージを自動送信（どこから開いても動作）
+    async function triggerAction(userId, action) {
+      document.getElementById('loading-msg').textContent = '処理中です...';
+      await fetch('/api/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action }),
+      });
+      document.getElementById('loading-msg').textContent = '完了しました。LINEをご確認ください。';
+      setTimeout(() => liff.closeWindow(), 1500);
     }
 
     // ===== テストモード（?testmode=1）: LINEなしでブラウザから動作確認 =====
@@ -141,7 +137,7 @@
           const page = getPage();
 
           if (page === 'free') {
-            await autoSendOrOpen('無料相談');
+            await triggerAction(liff.getContext().userId, 'free');
             return;
           }
 
@@ -181,7 +177,7 @@
 
           } else {
             // auth（デフォルト）
-            await autoSendOrOpen('メール認証');
+            await triggerAction(liff.getContext().userId, 'auth');
           }
         })
         .catch(err => {
