@@ -105,8 +105,11 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, action }),
       });
-      document.getElementById('loading-msg').textContent = '完了しました。LINEをご確認ください。';
-      setTimeout(() => liff.closeWindow(), 1500);
+      // 公式LINEのトーク画面へ移動
+      liff.openWindow({
+        url: `https://line.me/R/oaMessage/%40${OA_ID}`,
+        external: false,
+      });
     }
 
     // ===== テストモード（?testmode=1）: LINEなしでブラウザから動作確認 =====
