@@ -97,18 +97,17 @@
         .catch(err => alert('エラーが発生しました: ' + err.message));
     }
 
-    // チャットコンテキストがある場合は自動送信、ない場合はOAチャットへ誘導
+    // 公式LINEの1対1チャットのみ自動送信、それ以外は公式LINEチャットへ誘導
     async function autoSendOrOpen(text) {
       const context = liff.getContext();
-      // sendMessages() が使えるのはチャット内（utou/room/group/square_chat）のみ
-      const CHAT_TYPES = ['utou', 'room', 'group', 'square_chat'];
-      const hasChatContext = context && CHAT_TYPES.includes(context.type);
+      // utou（1対1）のみ自動送信。グループ・トーク室は公式LINEへ誘導する
+      const isDirectChat = context && context.type === 'utou';
 
-      if (hasChatContext) {
+      if (isDirectChat) {
         await liff.sendMessages([{ type: 'text', text }]);
         liff.closeWindow();
       } else {
-        // チャット外（ホーム・通知・外部ブラウザ）→ OAチャットを開いてテキストをセット
+        // グループ・ホーム・外部ブラウザ → 公式LINEの1対1チャットを開く
         window.location.href =
           `https://line.me/R/oaMessage/%40${OA_ID}?text=${encodeURIComponent(text)}`;
       }
