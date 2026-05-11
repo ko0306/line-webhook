@@ -292,11 +292,12 @@ async function handleMessage(event) {
     case '追加契約_アプリ制作':
       return handleAdditionalContractOther(event, lineUserId, 'アプリ制作');
     // ==================== 無料相談カテゴリ ====================
-    case 'fc_shift': return handleConsultCategory(event, 'shift');
-    case 'fc_hp':    return handleConsultCategory(event, 'hp');
-    case 'fc_app':   return handleConsultCategory(event, 'app');
-    case 'fc_price': return handleConsultCategory(event, 'price');
-    case 'fc_other': return handleConsultOther(event);
+    case 'シフトアプリ': return handleConsultCategory(event, 'shift');
+    case 'HP制作':       return handleConsultCategory(event, 'hp');
+    case 'アプリ制作':   return handleConsultCategory(event, 'app');
+    case '料金・費用':   return handleConsultCategory(event, 'price');
+    case 'その他':       return handleConsultOther(event);
+    case '担当者に相談':
     case 'fd_staff':
       return client.replyMessage(event.replyToken, {
         type: 'text',
@@ -316,88 +317,88 @@ async function handleMessage(event) {
     case 'fd_shift_price':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【シフトアプリ 料金・プラン】\n\n📱 ライト（最大10名）：月額¥1,500\n📱 スタンダード（最大30名）：月額¥3,000\n📱 プレミアム（人数無制限）：月額¥5,000\n\n他社と比べて圧倒的にお得な価格でご提供しています！\n完全カスタマイズも対応可能です😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_shift_feat':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【シフトアプリ 主な機能】\n\n✅ シフト提出・作成・承認\n✅ 勤怠打刻（出勤・退勤・休憩）\n✅ 勤務時間集計\n✅ CSV出力\n✅ プッシュ通知\n✅ 修正申請機能\n✅ 完全カスタマイズ対応\n\nお客様専用に構築するため、必要な機能だけをシンプルに実装できます😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_shift_trial':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【無料体験について】\n\n無料トライアルのご希望はお問い合わせよりご相談ください😊\n担当者がご案内いたします。' },
-        { type: 'text', text: '担当者に直接ご連絡しますか？', quickReply: makeQuickReply([['はい', 'fc_staff_yes'], ['他の質問', 'fc_shift']]) },
+        { type: 'text', text: '担当者に直接ご連絡しますか？', quickReply: makeQuickReply([['はい、お願いします', 'fc_staff_yes'], ['他の質問をする', 'fc_staff_no']]) },
       ]);
     case 'fd_shift_users':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【スタッフ人数について】\n\n・ライト：最大10名\n・スタンダード：最大30名\n・プレミアム：無制限\n\nスタッフ数が増えても、プラン変更で柔軟に対応できます😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_shift_sec':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【セキュリティについて】\n\nお客様ごとに専用アプリを作成するため、部外者が干渉することはできない仕組みです🔒\nデータは世界水準のDBで暗号化して安全に管理しています。' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['シフトアプリQ&A', 'fc_shift']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
 
     // --- HP詳細 ---
     case 'fd_hp_price':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【HP制作 料金】\n\n¥50,000〜です。\nページ数・デザイン・機能によって異なります。まずはお気軽にご相談ください😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_hp_period':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【HP制作 期間】\n\nご要望によって異なりますが、打ち合わせ後に目安をお伝えします。\nまずはお気軽にご相談ください😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_hp_mobile':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【スマホ対応について】\n\nすべてのHPをスマートフォン対応（レスポンシブ）で制作しています😊\nPC・スマホ・タブレットで最適に表示されます。' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_hp_custom':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【HP カスタマイズ】\n\nお客様のご要望に合わせて柔軟に対応します😊\nご希望のデザインや機能をお伝えください。' },
-        { type: 'text', text: '担当者に直接ご相談しますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['HPのQ&A', 'fc_hp']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
 
     // --- アプリ制作詳細 ---
     case 'fd_app_price':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【アプリ制作 料金】\n\n¥500,000〜です。\n要件によって大きく異なります。まずはお気軽にご相談ください😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['アプリのQ&A', 'fc_app']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_app_period':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【アプリ開発 期間】\n\n・小規模：数週間〜\n・大規模：数ヶ月〜\n\n要件確認後に目安をお伝えします😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['アプリのQ&A', 'fc_app']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_app_ios':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【iOS・Android対応】\n\n両方に対応可能です😊\n要件に応じて最適な方法をご提案します。' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['アプリのQ&A', 'fc_app']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
 
     // --- 料金詳細 ---
     case 'fd_price_shift':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【シフトアプリ 月額料金】\n・ライト（最大10名）：¥1,500/月\n・スタンダード（最大30名）：¥3,000/月\n・プレミアム（無制限）：¥5,000/月\n\n他社と比べて圧倒的にお得です😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_price_hp':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【HP制作 料金】\n¥50,000〜です。\nページ数・機能によって異なります😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_price_app':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【アプリ制作 料金】\n¥500,000〜です。\n要件によって異なります😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_price_payment':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【支払い方法】\nクレジットカードにてご契約専用サイトよりお支払いいただきます。\nご契約時に専用サイトのURLをご案内いたします😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
+        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
 
     case 'よくあるQ&A':
@@ -960,6 +961,18 @@ async function notifyInternalGroup(type, payload) {
 }
 
 // ==================== 無料相談フロー ====================
+// 「他にご質問はありますか？」共通クイックリプライ（全カテゴリ表示）
+function consultFollowupQR() {
+  return makeQuickReply([
+    ['📱 シフトアプリ', 'シフトアプリ'],
+    ['🌐 HP制作',       'HP制作'],
+    ['💻 アプリ制作',   'アプリ制作'],
+    ['💰 料金・費用',   '料金・費用'],
+    ['💬 その他',       'その他'],
+    ['担当者に相談',    '担当者に相談'],
+  ]);
+}
+
 async function handleFreeConsultWelcome(event, userId) {
   await client.replyMessage(event.replyToken, {
     type: 'text',
@@ -970,11 +983,11 @@ async function handleFreeConsultWelcome(event, userId) {
     type: 'text',
     text: 'どのようなことについてご相談でしょうか？\nお気軽にお選びください👇',
     quickReply: makeQuickReply([
-      ['📱 シフトアプリ', 'fc_shift'],
-      ['🌐 HP制作',       'fc_hp'],
-      ['💻 アプリ制作',   'fc_app'],
-      ['💰 料金・費用',   'fc_price'],
-      ['💬 その他',       'fc_other'],
+      ['📱 シフトアプリ', 'シフトアプリ'],
+      ['🌐 HP制作',       'HP制作'],
+      ['💻 アプリ制作',   'アプリ制作'],
+      ['💰 料金・費用',   '料金・費用'],
+      ['💬 その他',       'その他'],
     ]),
   });
 }
@@ -1034,9 +1047,7 @@ async function handleConsultOther(event) {
   return client.replyMessage(event.replyToken, {
     type: 'text',
     text: 'ご相談内容をキーワードで入力していただくか、担当者に直接ご連絡することも可能です😊\n\n例：「シフト」「料金」「セキュリティ」など',
-    quickReply: makeQuickReply([
-      ['担当者に連絡する', 'fd_staff'],
-    ]),
+    quickReply: consultFollowupQR(),
   });
 }
 
