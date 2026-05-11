@@ -143,7 +143,7 @@ async function handleFollow(event) {
     await Promise.all([
       client.replyMessage(event.replyToken, {
         type: 'text',
-        text: 'おかえりなさい！OZONONIXです😊\n以前ご登録いただいたことがあります。\nセキュリティ確認のため、ご登録時のメールアドレスを教えてください📧',
+        text: 'おかえりなさい！OZONONIXです😊\n以前ご登録いただいたことがあります。\nメールアドレスのご確認はセキュリティ強化のためです。\nご登録時のメールアドレスを教えてください📧',
       }),
       gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
     ]);
@@ -163,7 +163,7 @@ async function handleFollow(event) {
     await Promise.all([
       client.replyMessage(event.replyToken, {
         type: 'text',
-        text: 'この度はOZONONIXの公式LINEにご登録いただきありがとうございます！\nセキュリティ確認のため、お問い合わせ時に入力したメールアドレスを教えてください📧',
+        text: 'この度はOZONONIXの公式LINEにご登録いただきありがとうございます！\nメールアドレスのご確認はセキュリティ強化のためです。\nお問い合わせ時に入力したメールアドレスを教えてください📧',
       }),
       gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
       gasPost('saveUserService', { lineUserId: userId, service }),
@@ -239,7 +239,7 @@ async function handleMessage(event) {
   switch (text) {
     case 'メール認証':
       await gasPost('setConversationState', { lineUserId, state: 'WAITING_EMAIL', stateData: {} });
-      return replyText(event.replyToken, 'この度はお問い合わせいただきありがとうございます！\nセキュリティ強化のため、お問い合わせ時に入力したメールアドレスを教えてください📧');
+      return replyText(event.replyToken, 'この度はお問い合わせいただきありがとうございます！\nメールアドレスのご確認はセキュリティ強化のためです。\nお問い合わせ時に入力したメールアドレスを教えてください📧');
     case '無料相談':
       return handleFreeConsultWelcome(event, lineUserId);
     case 'お問い合わせ開始':
