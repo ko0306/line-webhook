@@ -42,7 +42,7 @@ const KEYWORD_RULES = [
   },
   {
     words: ['支払い', '請求', 'クレジット', 'カード', '振込', '領収書', '請求書'],
-    reply: 'お支払いについてのご質問ありがとうございます！\n\nクレジットカードにてご契約専用サイトよりお支払いいただきます。\nご契約時に専用サイトのURLをご案内します。\n\nご不明な点はお問い合わせください😊',
+    reply: 'お支払いについてのご質問ありがとうございます！\n\nクレジットカードにてご契約専用サイトよりお支払いいただきます。\nご契約時に専用サイトのURLをご案内いたします。\n\nご不明な点はお気軽にお問い合わせください😊',
   },
   {
     words: ['解約', '退会', 'やめ', 'キャンセル'],
@@ -62,7 +62,7 @@ const KEYWORD_RULES = [
   },
   {
     words: ['こんにちは', 'こんばんは', 'おはよう', 'はじめまして', 'よろしく'],
-    reply: 'こんにちは！OZONONIXです😊\n\nビジネスに役立つサービスを提供しています。\nご質問はお気軽にどうぞ！',
+    reply: 'こんにちは！OZONONIXでございます😊\n\nビジネスに役立つサービスをご提供しております。\nご質問はお気軽にどうぞ！',
   },
   {
     words: ['ありがとう', '感謝', 'ありがとございます'],
@@ -70,7 +70,7 @@ const KEYWORD_RULES = [
   },
   {
     words: ['契約', '申し込み', '申込', '始めたい', 'はじめたい', '使いたい'],
-    reply: 'ご契約・お申し込みはこちらのフォームからお願いします😊\n\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。',
+    reply: 'ご契約・お申し込みはこちらのフォームよりお願いいたします😊\n\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。',
   },
   {
     words: ['問い合わせ', 'お問合せ', '質問', '相談'],
@@ -103,8 +103,8 @@ const FAQ_DATA = {
     { q: '完成後のサポートはありますか？', a: '保守・運用サポートについては個別にご相談ください。' },
   ],
   '料金・支払い': [
-    { q: '支払い方法は？', a: 'クレジットカードにてご契約専用サイトよりお支払いいただきます。ご契約時に専用サイトのURLをご案内します。' },
-    { q: '領収書は発行できますか？', a: 'はい、発行可能です。ご入金確認後にお送りします。' },
+    { q: '支払い方法は？', a: 'クレジットカードにてご契約専用サイトよりお支払いいただきます。ご契約時に専用サイトのURLをご案内いたします。' },
+    { q: '領収書は発行できますか？', a: 'はい、発行可能でございます。ご入金確認後にお送りいたします。' },
     { q: '解約はできますか？', a: 'はい、解約はこの公式LINEで承っています。\n下のメニューの「規約・プランを確認」→「退会はこちら」よりお手続きください。' },
     { q: '分割払いはできますか？', a: '大型案件については個別にご相談ください。' },
   ],
@@ -173,15 +173,15 @@ async function handleFollow(event) {
 
   // 普通の登録（refなし・その他）→ 挨拶 + カルーセル
   await gasPost('saveUserService', { lineUserId: userId, service: 'other' });
-  await client.replyMessage(event.replyToken, { type: 'text', text: 'はじめまして！OZONONIXです😊' });
+  await client.replyMessage(event.replyToken, { type: 'text', text: 'はじめまして。OZONONIXでございます😊' });
   await sleep(1500);
-  await client.pushMessage(userId, { type: 'text', text: '友だち追加ありがとうございます！\nこのアカウントでは、弊社サービスのご紹介・お問い合わせ対応をしています。' });
+  await client.pushMessage(userId, { type: 'text', text: '友だち追加いただきありがとうございます！\nこのアカウントでは、弊社サービスのご紹介・お問い合わせ対応をしております。' });
   await sleep(1500);
-  await client.pushMessage(userId, { type: 'text', text: '弊社では以下の三つのサービスを提供しています💪\n詳しい資料には、料金・発注から納品までの流れが掲載されています！' });
+  await client.pushMessage(userId, { type: 'text', text: '弊社では以下の三つのサービスをご提供しております💪\n詳しい資料には、料金・発注から納品までの流れが掲載されております！' });
   await sleep(1500);
   await client.pushMessage(userId, {
     type: 'text',
-    text: '🌟 特にイチオシは「シフト管理アプリ」です！\n\n✅ 完全カスタマイズ可能\n✅ 他社と比べて圧倒的に安い月額料金\n✅ お客様専用に作成するため部外者が干渉できない高いセキュリティ\n✅ シフト提出・作成・勤怠入力がすべて一括管理\n\nぜひ詳細をご覧ください👇',
+    text: '🌟 特におすすめは「シフト管理アプリ」です！\n\n✅ 完全カスタマイズ対応\n✅ 他社と比べてリーズナブルな月額料金\n✅ お客様専用に作成するため部外者が干渉できない高いセキュリティ\n✅ シフト提出・作成・勤怠入力がすべて一括管理\n\nぜひ詳細をご覧ください👇',
   });
   await sleep(1500);
   await client.pushMessage(userId, {
@@ -256,7 +256,7 @@ async function handleMessage(event) {
     case '問合せ対応_担当者':
       await Promise.all([
         client.replyMessage(event.replyToken, [
-          { type: 'text', text: '担当者に繋ぎます！\nこちらに直接メッセージをお送りください😊\n担当者が確認次第、返信いたします。' },
+          { type: 'text', text: '担当者にお繋ぎいたします。\nこちらに直接メッセージをお送りください😊\n担当者が確認次第、ご返信いたします。' },
           { type: 'text', text: '💬 対応時間：平日 10:00〜18:00' },
         ]),
         sendEmail(lineUserId, 'お問い合わせ（ご質問・ご相談）から担当者対応が選ばれました。LINEで担当者対応をお願いします。'),
@@ -270,8 +270,16 @@ async function handleMessage(event) {
       return replyText(event.replyToken, 'ご相談の内容をキーワードで入力してください。\n（例：「料金」「機能」「セキュリティ」など）');
     case '問合せ種別_契約':
       return replyText(event.replyToken,
-        'ご契約のお申し込みはこちらのフォームからお願いします😊\n\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。'
+        'ご契約のお申し込みはこちらのフォームよりお願いいたします😊\n\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。'
       );
+    case '問合せ種別_追加契約':
+      return handleAdditionalContractSelect(event, lineUserId);
+    case '追加契約_シフトアプリ':
+      return handleAdditionalContractShift(event, lineUserId);
+    case '追加契約_HP作成':
+      return handleAdditionalContractOther(event, lineUserId, 'HP作成');
+    case '追加契約_アプリ制作':
+      return handleAdditionalContractOther(event, lineUserId, 'アプリ制作');
     // ==================== 無料相談カテゴリ ====================
     case 'fc_shift': return handleConsultCategory(event, 'shift');
     case 'fc_hp':    return handleConsultCategory(event, 'hp');
@@ -377,7 +385,7 @@ async function handleMessage(event) {
       ]);
     case 'fd_price_payment':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【支払い方法】\nクレジットカードにてご契約専用サイトよりお支払いいただきます。\nご契約時に専用サイトのURLをご案内します😊' },
+        { type: 'text', text: '【支払い方法】\nクレジットカードにてご契約専用サイトよりお支払いいただきます。\nご契約時に専用サイトのURLをご案内いたします😊' },
         { type: 'text', text: '他にご質問はありますか？', quickReply: makeQuickReply([['担当者に相談', 'fd_staff'], ['料金Q&A', 'fc_price']]) },
       ]);
 
@@ -403,7 +411,18 @@ async function handleMessage(event) {
     return handleInquiryService(event, text.replace('問い合わせ_', ''), lineUserId);
   }
 
-  // --- 会話状態 ---
+  // --- メールアドレス入力（GAS呼び出し前にチェック）---
+  if (text.includes('@') && text.includes('.')) {
+    return handleEmailInput(event, text, lineUserId);
+  }
+
+  // --- キーワードマッチング（GAS呼び出し前にチェック）---
+  const match = findKeyword(text);
+  if (match) {
+    return replyText(event.replyToken, match.reply);
+  }
+
+  // --- 会話状態（上記に該当しない場合のみGAS呼び出し）---
   const { state, stateData } = await gasPost('getConversationState', { lineUserId });
 
   switch (state) {
@@ -433,17 +452,6 @@ async function handleMessage(event) {
       if (state && state.startsWith('WAITING_INFO_CHANGE_VALUE:')) {
         return handleInfoChangeValue(event, text, lineUserId, state.split(':')[1]);
       }
-  }
-
-  // --- メールアドレス入力 ---
-  if (text.includes('@') && text.includes('.')) {
-    return handleEmailInput(event, text, lineUserId);
-  }
-
-  // --- キーワードマッチング ---
-  const match = findKeyword(text);
-  if (match) {
-    return replyText(event.replyToken, match.reply);
   }
 
   // --- 未判定メッセージ ---
@@ -504,6 +512,7 @@ async function handleInquiryContact(event, lineUserId) {
     quickReply: makeQuickReply([
       ['ご質問・ご相談', '問合せ種別_質問'],
       ['ご契約を希望', '問合せ種別_契約'],
+      ['他の商品も契約', '問合せ種別_追加契約'],
     ]),
   });
 }
@@ -592,7 +601,7 @@ async function handleEmailInput(event, email, lineUserId) {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
     return client.replyMessage(event.replyToken, {
       type: 'text',
-      text: 'メールアドレスが見つかりませんでした。\n\nまずウェブのお問い合わせフォームからお申し込みください👇\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nお申し込み後、こちらでメールアドレスを入力してください。',
+      text: 'メールアドレスが見つかりませんでした。\n\nまずウェブのお問い合わせフォームからお申し込みください👇\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nお申し込み後、こちらでメールアドレスをご入力ください。',
     });
   }
   await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
@@ -636,7 +645,7 @@ async function handleEmailInput(event, email, lineUserId) {
     await Promise.all([
       client.replyMessage(event.replyToken, [
         { type: 'text', text: 'ありがとうございます！確認が完了しました😊' },
-        { type: 'text', text: 'お問い合わせ内容を確認し、カウンセリングをしたいと思います。\n担当者からご連絡しますので、しばらくお待ちください。' },
+        { type: 'text', text: 'お問い合わせ内容をご確認の上、担当者よりカウンセリングのご連絡をいたします。\nしばらくお待ちください。' },
       ]),
       sendEmail(lineUserId, 'メール認証完了（HP/アプリ制作）。担当者からのカウンセリング対応をお願いします。'),
     ]);
@@ -652,14 +661,14 @@ async function handleCustomizationReply(event, text, lineUserId, stateData) {
       sendEmail(lineUserId, 'シフトアプリ契約者がカスタマイズ不要と回答しました。専用アプリの制作を開始してください。'),
     ]);
     await sleep(1200);
-    await client.pushMessage(lineUserId, { type: 'text', text: '専用のアプリを制作しています。営業日から二日以内でアプリを提供します。' });
+    await client.pushMessage(lineUserId, { type: 'text', text: '専用のアプリを制作しております。営業日から2営業日以内にアプリをご提供いたします。' });
     await sleep(1200);
-    await client.pushMessage(lineUserId, { type: 'text', text: '何か質問などあれば随時解答します。お気軽にお送りください😊' });
+    await client.pushMessage(lineUserId, { type: 'text', text: 'ご不明な点がございましたら随時お答えいたします。お気軽にご連絡ください😊' });
     return;
   }
   if (text === 'カスタマイズ_はい') {
     await gasPost('setConversationState', { lineUserId, state: 'WAITING_CUSTOMIZATION_DETAILS', stateData });
-    return replyText(event.replyToken, 'どういった機能やカスタマイズを希望するか、出来る限り詳細に教えてください。\n\n※ 全ての要望をかなえられない場合もありますがご了承ください。');
+    return replyText(event.replyToken, 'ご希望の機能やカスタマイズについて、できる限り詳しくお教えください。\n\n※ すべてのご要望にお応えできない場合もございますが、ご了承ください。');
   }
 }
 
@@ -685,7 +694,7 @@ async function handlePlanCheck(event) {
   }
 
   const { email, inquiry, plan, trial, budget, withdrawn } = result;
-  if (withdrawn) return replyText(event.replyToken, '退会済みのアカウントです。');
+  if (withdrawn) return replyText(event.replyToken, '退会済みのアカウントとなっております。');
 
   const isShift = inquiry && inquiry.includes('シフト');
   const infoText = [
@@ -716,7 +725,7 @@ async function handlePlanCheck(event) {
 async function handleInfoChangeStart(event, lineUserId) {
   await gasPost('setConversationState', { lineUserId, state: 'WAITING_INFO_FIELD_SELECT', stateData: {} });
   await client.replyMessage(event.replyToken, {
-    type: 'text', text: '変更したい項目を選択してください。',
+    type: 'text', text: '変更したい項目をお選びください。',
     quickReply: makeQuickReply([
       ['メールアドレス', 'フィールド変更_email'],
       ['ご予算', 'フィールド変更_budget'],
@@ -728,7 +737,7 @@ async function handleInfoChangeStart(event, lineUserId) {
 async function handleInfoFieldSelect(event, text, lineUserId) {
   if (text === 'キャンセル_情報変更') {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
-    return replyText(event.replyToken, 'キャンセルしました。');
+    return replyText(event.replyToken, 'キャンセルしました。またいつでもお気軽にご連絡ください。');
   }
   const fieldMap = {
     'フィールド変更_email':  { field: 'email',  label: 'メールアドレス' },
@@ -776,7 +785,7 @@ async function handlePlanChangeStart(event, lineUserId) {
 async function handlePlanChangeSelect(event, text, lineUserId, stateData) {
   if (text === 'キャンセル_プラン変更') {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
-    return replyText(event.replyToken, 'キャンセルしました。');
+    return replyText(event.replyToken, 'キャンセルしました。またいつでもお気軽にご連絡ください。');
   }
   if (!text.startsWith('プラン選択_')) return;
   const newPlan = text.replace('プラン選択_', '');
@@ -812,7 +821,7 @@ async function handlePlanChangeSelect(event, text, lineUserId, stateData) {
 async function handlePlanChangeConfirm(event, text, lineUserId, stateData) {
   if (text === 'キャンセル_プラン変更') {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
-    return replyText(event.replyToken, 'プラン変更をキャンセルしました。');
+    return replyText(event.replyToken, 'プラン変更をキャンセルしました。またいつでもお気軽にご連絡ください。');
   }
   if (text === '変更する') {
     const result = await gasPost('changePlan', { lineUserId, newPlan: stateData.newPlan });
@@ -832,7 +841,7 @@ async function handleWithdrawStart(event, lineUserId) {
   await gasPost('setConversationState', { lineUserId, state: 'WAITING_WITHDRAW_CONFIRM', stateData: {} });
   await client.replyMessage(event.replyToken, {
     type: 'text',
-    text: '⚠️ 退会処理を行います。\n退会すると全てのサービスが停止されます。\n\n本当に退会しますか？',
+    text: '⚠️ 退会処理を行います。\n退会されますと、すべてのサービスがご利用いただけなくなります。\n\n本当に退会されますか？',
     quickReply: makeQuickReply([['退会する', '退会する'], ['キャンセル', 'キャンセル_退会']]),
   });
 }
@@ -943,7 +952,7 @@ async function notifyInternalGroup(type, payload) {
 async function handleFreeConsultWelcome(event, userId) {
   await client.replyMessage(event.replyToken, {
     type: 'text',
-    text: 'こんにちは！OZONONIXです😊\n無料相談へのご登録ありがとうございます！',
+    text: 'こんにちは！OZONONIXでございます😊\n無料相談へのご登録ありがとうございます！',
   });
   await sleep(1200);
   await client.pushMessage(userId, {
@@ -1023,7 +1032,7 @@ async function handleConsultOther(event) {
 async function handleConsultStaff(event, lineUserId) {
   await Promise.all([
     client.replyMessage(event.replyToken, [
-      { type: 'text', text: '担当者に取り次いでいます。しばらくお待ちください🙏' },
+      { type: 'text', text: '担当者にお取り次ぎいたします。しばらくお待ちください🙏' },
       { type: 'text', text: '💬 対応時間：平日 10:00〜18:00\n（時間外のお問い合わせは翌営業日に対応いたします）' },
     ]),
     sendEmail(lineUserId, '無料相談から担当者接続が選ばれました。LINEで担当者対応をお願いします。'),
@@ -1070,6 +1079,82 @@ async function handleFreeConsultKeyword(event, text, lineUserId) {
   return client.replyMessage(event.replyToken, [
     { type: 'text', text: 'ご質問ありがとうございます😊\nいただいた内容については担当者が詳しくご案内いたします。' },
     contactMsg,
+  ]);
+}
+
+// ==================== 追加契約フロー ====================
+async function handleAdditionalContractSelect(event, lineUserId) {
+  await client.replyMessage(event.replyToken, {
+    type: 'template',
+    altText: '追加契約 サービス一覧',
+    template: {
+      type: 'carousel',
+      columns: [
+        {
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card1_shift.png',
+          imageAspectRatio: 'rectangle', imageSize: 'cover',
+          title: 'シフト管理アプリ',
+          text: 'シフト管理・勤怠・集計まで完結 ¥1500〜',
+          actions: [
+            { type: 'message', label: 'タッチしてください', message: '追加契約_シフトアプリ' },
+          ],
+        },
+        {
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card2_hp.png',
+          imageAspectRatio: 'rectangle', imageSize: 'cover',
+          title: 'HP作成',
+          text: '丁寧なカウンセリングと高いカスタマイズ ¥50000〜',
+          actions: [
+            { type: 'message', label: 'タッチしてください', message: '追加契約_HP作成' },
+          ],
+        },
+        {
+          thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card3_app.png',
+          imageAspectRatio: 'rectangle', imageSize: 'cover',
+          title: '業務効率化アプリ制作',
+          text: 'お客様に合わせたアプリを一から制作 ¥500000〜',
+          actions: [
+            { type: 'message', label: 'タッチしてください', message: '追加契約_アプリ制作' },
+          ],
+        },
+      ],
+    },
+  });
+}
+
+async function handleAdditionalContractShift(event, lineUserId) {
+  await Promise.all([
+    gasPost('appendService', { lineUserId, service: 'シフト管理アプリ' }),
+    gasPost('setConversationState', {
+      lineUserId, state: 'WAITING_CUSTOMIZATION',
+      stateData: { inquiry: 'シフト管理アプリ', plan: '' },
+    }),
+  ]);
+  await client.replyMessage(event.replyToken, [
+    { type: 'text', text: 'シフト管理アプリのご契約をご希望いただきありがとうございます！' },
+    {
+      type: 'text',
+      text: '【シフトアプリ プラン】\n📱 ライト（最大10名）：¥1,500/月\n📱 スタンダード（最大30名）：¥3,000/月\n📱 プレミアム（人数無制限）：¥5,000/月\n\nプランは担当者がご確認のうえご案内いたします。',
+    },
+    {
+      type: 'text',
+      text: '独自カスタマイズをご希望ですか？',
+      quickReply: makeQuickReply([
+        ['はい', 'カスタマイズ_はい'],
+        ['いいえ', 'カスタマイズ_いいえ'],
+      ]),
+    },
+  ]);
+}
+
+async function handleAdditionalContractOther(event, lineUserId, serviceName) {
+  await Promise.all([
+    gasPost('appendService', { lineUserId, service: serviceName }),
+    sendEmail(lineUserId, `追加契約のご希望（${serviceName}）が届きました。担当者よりカウンセリングをお願いします。`),
+  ]);
+  await client.replyMessage(event.replyToken, [
+    { type: 'text', text: `${serviceName}のご契約をご希望いただきありがとうございます！` },
+    { type: 'text', text: 'お問い合わせ内容をご確認の上、担当者よりカウンセリングのご連絡をいたします。\nしばらくお待ちください。' },
   ]);
 }
 

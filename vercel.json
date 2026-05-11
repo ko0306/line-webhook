@@ -7,6 +7,6 @@
     }
   },
   "rewrites": [
-    { "source": "/liff", "destination": "/public/liff.html" }
+    { "source": "/liff", "destination": "/liff.html" }
   ]
 }
