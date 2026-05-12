@@ -317,12 +317,20 @@ async function handleMessage(event) {
     case 'fd_shift_price':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【シフトアプリ 料金・プラン】\n\n📱 ライト（最大10名）：月額¥1,500\n📱 スタンダード（最大30名）：月額¥3,000\n📱 プレミアム（人数無制限）：月額¥5,000\n\n他社と比べて圧倒的にお得な価格でご提供しています！\n完全カスタマイズも対応可能です😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
+        { type: 'text', text: 'ご不明な点はありますか？', quickReply: makeQuickReply([
+          ['📝 お申し込みへ',  'シフト申し込み'],
+          ['📱 シフトアプリ',  'シフトアプリ'],
+          ['担当者に相談',     '担当者に相談'],
+        ]) },
       ]);
     case 'fd_shift_feat':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【シフトアプリ 主な機能】\n\n✅ シフト提出・作成・承認\n✅ 勤怠打刻（出勤・退勤・休憩）\n✅ 勤務時間集計\n✅ CSV出力\n✅ プッシュ通知\n✅ 修正申請機能\n✅ 完全カスタマイズ対応\n\nお客様専用に構築するため、必要な機能だけをシンプルに実装できます😊' },
-        { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
+        { type: 'text', text: 'ご希望の機能やカスタマイズがあればお気軽にお聞かせください😊\nご準備ができましたらお申し込みへどうぞ👇', quickReply: makeQuickReply([
+          ['📝 お申し込みへ',  'シフト申し込み'],
+          ['📱 シフトアプリ',  'シフトアプリ'],
+          ['担当者に相談',     '担当者に相談'],
+        ]) },
       ]);
     case 'fd_shift_trial':
       return client.replyMessage(event.replyToken, [
@@ -338,6 +346,42 @@ async function handleMessage(event) {
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: '【セキュリティについて】\n\nお客様ごとに専用アプリを作成するため、部外者が干渉することはできない仕組みです🔒\nデータは世界水準のDBで暗号化して安全に管理しています。' },
         { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
+      ]);
+
+    // --- シフトアプリ 申し込み・支払いフロー ---
+    case 'シフト申し込み':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: 'シフト管理アプリのお申し込みをご検討いただきありがとうございます😊\n\nご希望の機能やカスタマイズがあれば、この画面でそのままメッセージをお送りください。\n担当者が確認のうえアプリに反映いたします！' },
+        { type: 'text', text: 'ご希望のプランをお選びください👇\n\n📱 ライト（最大10名）：月額¥1,500\n📱 スタンダード（最大30名）：月額¥3,000\n📱 プレミアム（人数無制限）：月額¥5,000', quickReply: makeQuickReply([
+          ['ライト ¥1,500/月',       'シフト支払い_ライト'],
+          ['スタンダード ¥3,000/月', 'シフト支払い_スタンダード'],
+          ['プレミアム ¥5,000/月',   'シフト支払い_プレミアム'],
+          ['担当者に相談',           '担当者に相談'],
+        ]) },
+      ]);
+    case 'シフト支払い_ライト':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【ライトプラン 月額¥1,500】\n対象：スタッフ最大10名\n\nこちらからお支払いをお願いいたします👇\n[PAYMENT_URL_LIGHT]' },
+        { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
+          ['担当者に相談', '担当者に相談'],
+          ['プランを変更', 'シフト申し込み'],
+        ]) },
+      ]);
+    case 'シフト支払い_スタンダード':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【スタンダードプラン 月額¥3,000】\n対象：スタッフ最大30名\n\nこちらからお支払いをお願いいたします👇\n[PAYMENT_URL_STANDARD]' },
+        { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
+          ['担当者に相談', '担当者に相談'],
+          ['プランを変更', 'シフト申し込み'],
+        ]) },
+      ]);
+    case 'シフト支払い_プレミアム':
+      return client.replyMessage(event.replyToken, [
+        { type: 'text', text: '【プレミアムプラン 月額¥5,000】\n対象：スタッフ人数無制限\n\nこちらからお支払いをお願いいたします👇\n[PAYMENT_URL_PREMIUM]' },
+        { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
+          ['担当者に相談', '担当者に相談'],
+          ['プランを変更', 'シフト申し込み'],
+        ]) },
       ]);
 
     // --- HP詳細 ---
@@ -1002,6 +1046,7 @@ async function handleConsultCategory(event, category) {
         ['無料体験',       'fd_shift_trial'],
         ['スタッフ人数',   'fd_shift_users'],
         ['セキュリティ',   'fd_shift_sec'],
+        ['📝 お申し込みへ', 'シフト申し込み'],
         ['担当者に相談',   'fd_staff'],
       ],
     },
