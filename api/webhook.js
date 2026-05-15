@@ -13,8 +13,17 @@ const INTERNAL_GROUP_ID  = 'C4bfc1aee984b5f5e350dc8423885ce96';
 
 const PLAN_INFO = {
   'ライト':       { price: 1500 },
-  'スタンダード': { price: 3000 },
-  'プレミアム':   { price: 5000 },
+  'ベーシック':   { price: 1980 },
+  'スタンダード': { price: 2980 },
+  'プレミアム':   { price: 3980 },
+};
+
+// プランごとのStripe支払いURL
+const STRIPE_PAYMENT_URLS = {
+  'ライト':       'https://buy.stripe.com/3cIaEPcF97mG5dHaAI0sU00',
+  'ベーシック':   'https://buy.stripe.com/3cIaEPcF97mG5dHaAI0sU00',
+  'スタンダード': 'https://buy.stripe.com/aFa28j34z4aucG9aAI0sU01',
+  'プレミアム':   'https://buy.stripe.com/bJe6ozfRlayS35zgZ60sU02',
 };
 
 // ==================== キーワードルール ====================
@@ -361,7 +370,7 @@ async function handleMessage(event) {
       ]);
     case 'シフト支払い_ライト':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【ライトプラン 月額¥1,500】\n対象：スタッフ最大10名\n\nこちらからお支払いをお願いいたします👇\n[PAYMENT_URL_LIGHT]' },
+        { type: 'text', text: '【ベーシックプラン 月額¥1,980】\n対象：スタッフ最大10名\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/3cIaEPcF97mG5dHaAI0sU00' },
         { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
           ['担当者に相談', '担当者に相談'],
           ['プランを変更', 'シフト申し込み'],
@@ -369,7 +378,7 @@ async function handleMessage(event) {
       ]);
     case 'シフト支払い_スタンダード':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【スタンダードプラン 月額¥3,000】\n対象：スタッフ最大30名\n\nこちらからお支払いをお願いいたします👇\n[PAYMENT_URL_STANDARD]' },
+        { type: 'text', text: '【スタンダードプラン 月額¥2,980】\n対象：スタッフ最大30名\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/aFa28j34z4aucG9aAI0sU01' },
         { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
           ['担当者に相談', '担当者に相談'],
           ['プランを変更', 'シフト申し込み'],
@@ -377,7 +386,7 @@ async function handleMessage(event) {
       ]);
     case 'シフト支払い_プレミアム':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【プレミアムプラン 月額¥5,000】\n対象：スタッフ人数無制限\n\nこちらからお支払いをお願いいたします👇\n[PAYMENT_URL_PREMIUM]' },
+        { type: 'text', text: '【プレミアムプラン 月額¥3,980】\n対象：スタッフ人数無制限\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/bJe6ozfRlayS35zgZ60sU02' },
         { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
           ['担当者に相談', '担当者に相談'],
           ['プランを変更', 'シフト申し込み'],
@@ -485,7 +494,7 @@ async function handleMessage(event) {
     case 'WAITING_CUSTOMIZATION':
       return handleCustomizationReply(event, text, lineUserId, stateData);
     case 'WAITING_CUSTOMIZATION_DETAILS':
-      return handleCustomizationDetails(event, lineUserId);
+      return handleCustomizationDetails(event, lineUserId, stateData);
     case 'WAITING_PLAN_CHANGE_SELECT':
       return handlePlanChangeSelect(event, text, lineUserId, stateData);
     case 'WAITING_PLAN_CHANGE_CONFIRM':
@@ -710,34 +719,48 @@ async function handleEmailInput(event, email, lineUserId) {
 
 // ==================== カスタマイズフロー ====================
 async function handleCustomizationReply(event, text, lineUserId, stateData) {
+  const plan = stateData?.plan || '';
+  const paymentUrl = STRIPE_PAYMENT_URLS[plan] || '';
+
   if (text === 'カスタマイズ_いいえ') {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+    const messages = [
+      { type: 'text', text: 'カスタマイズについてのご質問ありがとうございます！' },
+      { type: 'text', text: 'ありがとうございます。\n担当者にお繋ぎいたします。\n\n現在お客様専用のアプリを制作中でございます。\n完成次第、担当者よりご連絡いたします。\nどうぞよろしくお願いいたします😊' },
+    ];
+    if (paymentUrl) {
+      messages.push({ type: 'text', text: `ご利用開始に向けてお支払いのご準備をお願いいたします👇\n${paymentUrl}` });
+    }
     await Promise.all([
-      client.replyMessage(event.replyToken, { type: 'text', text: 'かしこまりました！' }),
-      sendEmail(lineUserId, 'シフトアプリ契約者がカスタマイズ不要と回答しました。専用アプリの制作を開始してください。'),
+      client.replyMessage(event.replyToken, messages),
+      sendEmail(lineUserId, `シフトアプリ契約者がカスタマイズ不要と回答しました。専用アプリの制作を開始してください。プラン：${plan}`),
     ]);
-    await sleep(1200);
-    await client.pushMessage(lineUserId, { type: 'text', text: '専用のアプリを制作しております。営業日から2営業日以内にアプリをご提供いたします。' });
-    await sleep(1200);
-    await client.pushMessage(lineUserId, { type: 'text', text: 'ご不明な点がございましたら随時お答えいたします。お気軽にご連絡ください😊' });
     return;
   }
   if (text === 'カスタマイズ_はい') {
     await gasPost('setConversationState', { lineUserId, state: 'WAITING_CUSTOMIZATION_DETAILS', stateData });
-    return replyText(event.replyToken, 'ご希望の機能やカスタマイズについて、できる限り詳しくお教えください。\n\n※ すべてのご要望にお応えできない場合もございますが、ご了承ください。');
+    return replyText(event.replyToken,
+      'カスタマイズについてのご質問ありがとうございます！\n\nどのような変更・機能追加をご希望でしょうか？\nできる限り具体的にお教えいただけますと、よりスムーズに対応できます😊\n\n【記載例】\n・〇〇という機能を追加したい\n・画面のデザインを〇〇のようにしたい\n・〇〇の操作をもっと簡単にしたい\n\nご希望をそのままメッセージでお送りください👇'
+    );
   }
 }
 
-async function handleCustomizationDetails(event, lineUserId) {
+async function handleCustomizationDetails(event, lineUserId, stateData) {
   const customText = event.message.text;
+  const plan = stateData?.plan || '';
+  const paymentUrl = STRIPE_PAYMENT_URLS[plan] || '';
   await Promise.all([
     gasPost('saveCustomization', { lineUserId, content: customText }),
     gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
-    sendEmail(lineUserId, `シフトアプリ契約者からカスタマイズ要望が届きました。内容：${customText}`),
+    sendEmail(lineUserId, `シフトアプリ契約者からカスタマイズ要望が届きました。内容：${customText}\nプラン：${plan}`),
   ]);
-  await client.replyMessage(event.replyToken, { type: 'text', text: '承知しました。ありがとうございます。' });
-  await sleep(1200);
-  await client.pushMessage(lineUserId, { type: 'text', text: '担当者が確認しておりますので、お待ちください。' });
+  const messages = [
+    { type: 'text', text: 'ご要望を承りました。ありがとうございます😊\n担当者にお繋ぎいたします。しばらくお待ちください。' },
+  ];
+  if (paymentUrl) {
+    messages.push({ type: 'text', text: `ご利用開始に向けてお支払いのご準備をお願いいたします👇\n${paymentUrl}` });
+  }
+  await client.replyMessage(event.replyToken, messages);
 }
 
 // ==================== 規約・プラン ====================
