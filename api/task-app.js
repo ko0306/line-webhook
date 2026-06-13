@@ -358,6 +358,13 @@ function detectPage() {
     showPage(targetPage);
   }
 
+  // 安全タイムアウト: 6秒後も読み込み中なら強制表示
+  setTimeout(function() {
+    if (document.getElementById('loading').style.display !== 'none') {
+      showApp();
+    }
+  }, 6000);
+
   try {
     liff.init({ liffId: LIFF_ID })
       .then(function() {
