@@ -579,7 +579,6 @@ function buildShiftFeaturesHtml(currentPlan) {
     + '✅ <strong>独自カスタマイズ</strong>にも対応しています<br>'
     + 'ご希望の機能があればお気軽にLINEでご相談ください😊'
     + '</div>'
-    + '<a class="cta" href="https://ozononix.com/contact">📩 お問い合わせ・お申し込みはこちら</a>'
     + '</div>'
     + '</body></html>';
 }
