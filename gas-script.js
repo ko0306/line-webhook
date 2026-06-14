@@ -438,98 +438,148 @@ function jsonResponse(obj) {
 // シフトアプリ機能ページ HTML
 // ================================================================
 function buildShiftFeaturesHtml(currentPlan) {
-  var commonFeatures = [
-    { icon: '📅', title: 'シフト閲覧', desc: 'カレンダー＆タイムライン形式で確認' },
-    { icon: '⏰', title: '勤怠打刻', desc: '出勤・退勤・休憩開始・休憩終了をスマホから記録' },
-    { icon: '📊', title: '勤務時間確認', desc: '月次・週次・日次・時間帯別の統計を表示' },
-    { icon: '📱', title: 'スマホアプリ化', desc: 'ホーム画面に追加してアプリとして使用可能（PWA）' },
-    { icon: '👤', title: 'スタッフ管理', desc: '名前・役職・パスワードの登録・変更' },
-    { icon: '✏️', title: '修正申請', desc: '打刻ミスをスマホから申請・承認' },
-    { icon: '🚃', title: '交通費記録', desc: '出勤ごとの交通費を記録・集計' },
+  var features = [
+    { icon: '📅', title: 'シフト作成・管理',    desc: '管理者がカレンダー形式でシフトを作成。スタッフはスマホでいつでも確認できます。' },
+    { icon: '⏰', title: '勤怠打刻',            desc: '出勤・退勤・休憩を1タップで記録。時刻・GPS情報も自動保存されます。' },
+    { icon: '📊', title: '勤務時間の自動集計',  desc: '月次・週次の労働時間・残業時間を自動計算。給与計算にそのまま活用できます。' },
+    { icon: '📋', title: 'CSV出力',             desc: '勤怠データをCSV形式でダウンロード。Excelや給与計算ソフトとの連携も簡単。' },
+    { icon: '📱', title: 'スマホアプリとして使用', desc: 'ホーム画面に追加するだけでアプリとして起動（PWA）。インストール不要・すぐ使えます。' },
+    { icon: '🔔', title: 'プッシュ通知',         desc: 'シフト公開・変更をスタッフのスマホにリアルタイム通知。見落としゼロへ。' },
+    { icon: '✏️', title: '打刻修正申請',         desc: '打刻ミスをスタッフがスマホから申請→管理者が承認。手書き修正が不要になります。' },
+    { icon: '👥', title: 'スタッフ管理',         desc: 'スタッフの登録・削除・役職設定・パスワード変更がブラウザから簡単操作。' },
+    { icon: '🚃', title: '交通費記録',           desc: '出勤ごとの交通費を記録し月次集計。交通費精算の手間を大幅に削減できます。' },
+    { icon: '🔒', title: '高いセキュリティ',     desc: 'お客様専用の独立したアプリを構築。他社データと混在せず安心してご利用いただけます。' },
   ];
-  var planFeatures = {
-    'ベーシック': [
-      { ok: true,  text: 'スタッフ数：〜19名' },
-      { ok: true,  text: '1店舗' },
-      { ok: true,  text: 'プッシュ通知' },
-      { ok: true,  text: '公式LINE対応' },
-      { ok: false, text: '店舗数無制限' },
-      { ok: false, text: '優先サポート' },
-    ],
-    'スタンダード': [
-      { ok: true,  text: 'スタッフ数：〜40名' },
-      { ok: true,  text: '店舗数無制限' },
-      { ok: true,  text: 'プッシュ通知' },
-      { ok: true,  text: '公式LINE対応' },
-      { ok: false, text: '優先サポート' },
-    ],
-    'プレミアム': [
-      { ok: true, text: 'スタッフ数：無制限' },
-      { ok: true, text: '店舗数無制限' },
-      { ok: true, text: 'プッシュ通知' },
-      { ok: true, text: '公式LINE対応' },
-      { ok: true, text: '優先サポート' },
-    ],
-  };
-  var commonHtml = commonFeatures.map(function(f) {
-    return '<div class="feat"><span class="ficon">' + f.icon + '</span>'
+
+  var planData = [
+    {
+      name: 'ベーシック',
+      price: 1980,
+      popular: false,
+      summary: '小規模店舗向け',
+      items: [
+        { ok: true,  text: '従業員数 〜19名' },
+        { ok: true,  text: '1店舗' },
+        { ok: true,  text: 'プッシュ通知' },
+        { ok: true,  text: '公式LINE対応' },
+        { ok: false, text: '多店舗管理' },
+        { ok: false, text: '優先サポート' },
+      ],
+    },
+    {
+      name: 'スタンダード',
+      price: 2980,
+      popular: true,
+      summary: '中規模・多店舗向け',
+      items: [
+        { ok: true,  text: '従業員数 〜40名' },
+        { ok: true,  text: '店舗数 無制限' },
+        { ok: true,  text: 'プッシュ通知' },
+        { ok: true,  text: '公式LINE対応' },
+        { ok: false, text: '優先サポート' },
+      ],
+    },
+    {
+      name: 'プレミアム',
+      price: 3980,
+      popular: false,
+      summary: '大規模・優先対応',
+      items: [
+        { ok: true, text: '従業員数 無制限' },
+        { ok: true, text: '店舗数 無制限' },
+        { ok: true, text: 'プッシュ通知' },
+        { ok: true, text: '公式LINE対応' },
+        { ok: true, text: '優先サポート' },
+      ],
+    },
+  ];
+
+  var featHtml = features.map(function(f) {
+    return '<div class="feat">'
+      + '<span class="ficon">' + f.icon + '</span>'
       + '<div><div class="ftitle">' + f.title + '</div>'
-      + '<div class="fdesc">' + f.desc + '</div></div></div>';
-  }).join('');
-  var planCards = Object.entries(PLANS).map(function(entry) {
-    var name = entry[0];
-    var info = entry[1];
-    var isCurrent = name === currentPlan;
-    var maxUsers = info.maxUsers ? '最大' + info.maxUsers + '名' : '人数無制限';
-    var rows = (planFeatures[name] || []).map(function(f) {
-      return '<tr><td class="' + (f.ok ? 'ok' : 'ng') + '">' + (f.ok ? '✅' : '❌') + '</td><td>' + f.text + '</td></tr>';
-    }).join('');
-    return '<div class="card' + (isCurrent ? ' current' : '') + '">'
-      + (isCurrent ? '<div class="badge">現在のプラン</div>' : '')
-      + '<div class="pname">' + name + '</div>'
-      + '<div class="price">¥' + info.price.toLocaleString() + '<span>/月</span></div>'
-      + '<div class="users">' + maxUsers + '</div>'
-      + '<table>' + rows + '</table>'
+      + '<div class="fdesc">' + f.desc + '</div></div>'
       + '</div>';
   }).join('');
-  var css = '*{box-sizing:border-box;margin:0;padding:0}'
-    + 'body{font-family:"Hiragino Kaku Gothic ProN",sans-serif;background:#f0f4f8;color:#333;padding:16px 12px 40px}'
-    + 'h1{text-align:center;color:#06C755;font-size:20px;margin-bottom:4px}'
-    + '.hero-sub{text-align:center;color:#888;font-size:12px;margin-bottom:20px}'
-    + 'h2{font-size:15px;font-weight:bold;margin:20px 0 10px;color:#444}'
-    + '.features{display:flex;flex-direction:column;gap:8px;max-width:480px;margin:0 auto}'
-    + '.feat{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}'
-    + '.ficon{font-size:22px;flex-shrink:0}'
-    + '.ftitle{font-size:14px;font-weight:bold;margin-bottom:2px}'
-    + '.fdesc{font-size:12px;color:#666}'
-    + '.cards{display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto}'
-    + '.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border:2px solid transparent;position:relative}'
-    + '.card.current{border-color:#06C755}'
-    + '.badge{position:absolute;top:-10px;right:14px;background:#06C755;color:#fff;padding:2px 12px;border-radius:20px;font-size:11px;font-weight:bold}'
-    + '.pname{font-size:18px;font-weight:bold;margin-bottom:4px}'
-    + '.price{font-size:24px;font-weight:bold;color:#06C755;margin-bottom:2px}'
-    + '.price span{font-size:13px;color:#888}'
-    + '.users{font-size:12px;color:#999;margin-bottom:10px}'
-    + 'table{width:100%;border-collapse:collapse}'
-    + 'td{font-size:13px;padding:5px 4px;border-bottom:1px solid #f5f5f5}'
-    + 'td.ok,td.ng{width:28px;text-align:center}'
-    + 'tr:last-child td{border-bottom:none}'
-    + '.note{text-align:center;font-size:12px;color:#888;margin:16px auto 0;padding:14px;background:#fff;border-radius:10px;max-width:480px;line-height:1.7}'
-    + '.wrap{max-width:480px;margin:0 auto}';
+
+  var planHtml = planData.map(function(p) {
+    var isCurrent = p.name === currentPlan;
+    var rowsHtml = p.items.map(function(item) {
+      return '<div class="prow' + (item.ok ? '' : ' ng') + '">'
+        + '<span class="chk">' + (item.ok ? '✅' : '❌') + '</span>'
+        + '<span>' + item.text + '</span>'
+        + '</div>';
+    }).join('');
+    var badges = '';
+    if (p.popular && !isCurrent) badges += '<div class="badge pop">人気 No.1</div>';
+    if (isCurrent)               badges += '<div class="badge cur">現在のプラン</div>';
+    return '<div class="card' + (isCurrent ? ' current' : '') + (p.popular ? ' popular' : '') + '">'
+      + badges
+      + '<div class="pname">' + p.name + 'プラン</div>'
+      + '<div class="psummary">' + p.summary + '</div>'
+      + '<div class="pprice">¥' + p.price.toLocaleString() + '<span class="pmo">/月（税込）</span></div>'
+      + '<div class="divider"></div>'
+      + '<div class="prows">' + rowsHtml + '</div>'
+      + '</div>';
+  }).join('');
+
+  var css = [
+    '*{box-sizing:border-box;margin:0;padding:0}',
+    'body{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;background:#f0f4f8;color:#333;padding-bottom:48px}',
+    '.hero{background:linear-gradient(135deg,#06C755 0%,#00a040 100%);color:#fff;text-align:center;padding:28px 16px 22px}',
+    '.hero-title{font-size:24px;font-weight:bold;letter-spacing:.08em}',
+    '.hero-sub{font-size:12px;opacity:.85;margin-top:4px}',
+    '.hero-note{display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;font-size:11px;padding:4px 14px;margin-top:10px}',
+    '.wrap{max-width:480px;margin:0 auto;padding:0 12px}',
+    'h2{font-size:15px;font-weight:bold;margin:24px 0 12px;color:#444;display:flex;align-items:center;gap:6px}',
+    '.feats{display:flex;flex-direction:column;gap:8px}',
+    '.feat{display:flex;align-items:flex-start;gap:12px;background:#fff;border-radius:12px;padding:13px 14px;box-shadow:0 1px 5px rgba(0,0,0,.07)}',
+    '.ficon{font-size:22px;flex-shrink:0;margin-top:1px}',
+    '.ftitle{font-size:14px;font-weight:bold;margin-bottom:3px;color:#222}',
+    '.fdesc{font-size:12px;color:#666;line-height:1.65}',
+    '.plans{display:flex;flex-direction:column;gap:16px}',
+    '.card{background:#fff;border-radius:14px;padding:20px 16px 16px;box-shadow:0 2px 10px rgba(0,0,0,.09);border:2.5px solid transparent;position:relative;overflow:hidden}',
+    '.card.current{border-color:#06C755}',
+    '.card.popular:not(.current){border-color:#ff9500}',
+    '.badge{display:inline-block;font-size:11px;font-weight:bold;border-radius:20px;padding:3px 12px;margin-bottom:10px}',
+    '.badge.pop{background:#ff9500;color:#fff}',
+    '.badge.cur{background:#06C755;color:#fff}',
+    '.pname{font-size:19px;font-weight:bold;color:#222;margin-bottom:2px}',
+    '.psummary{font-size:12px;color:#888;margin-bottom:10px}',
+    '.pprice{font-size:30px;font-weight:bold;color:#06C755;line-height:1}',
+    '.pmo{font-size:13px;color:#888;font-weight:normal}',
+    '.divider{height:1px;background:#f0f0f0;margin:14px 0}',
+    '.prows{display:flex;flex-direction:column;gap:7px}',
+    '.prow{display:flex;align-items:center;gap:8px;font-size:13px;color:#333}',
+    '.prow.ng{color:#bbb}',
+    '.chk{width:22px;text-align:center;flex-shrink:0}',
+    '.note-box{background:#fff;border-radius:12px;padding:16px;text-align:center;font-size:12px;color:#666;line-height:1.85;margin-top:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}',
+    '.note-box strong{color:#06C755}',
+    '.cta{display:block;background:#06C755;color:#fff;text-align:center;padding:15px;border-radius:13px;font-size:15px;font-weight:bold;text-decoration:none;margin-top:16px;box-shadow:0 4px 12px rgba(6,199,85,.35);letter-spacing:.04em}',
+  ].join('');
+
   return '<!DOCTYPE html><html lang="ja"><head>'
     + '<meta charset="UTF-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
     + '<title>OZOSHIFT 機能・プラン一覧</title>'
     + '<style>' + css + '</style>'
     + '</head><body>'
-    + '<h1>OZOSHIFT</h1>'
-    + '<p class="hero-sub">OZONOIX シフト・勤怠管理アプリ</p>'
+    + '<div class="hero">'
+    + '<div class="hero-title">⚡ OZOSHIFT</div>'
+    + '<div class="hero-sub">OZONOIX シフト・勤怠管理アプリ</div>'
+    + '<div class="hero-note">🎉 初月まるごと無料トライアル実施中</div>'
+    + '</div>'
     + '<div class="wrap">'
     + '<h2>📋 全プラン共通の機能</h2>'
-    + '<div class="features">' + commonHtml + '</div>'
-    + '<h2>💎 プラン別の機能</h2>'
-    + '<div class="cards">' + planCards + '</div>'
-    + '<div class="note">これら以外にも<strong>独自カスタマイズ</strong>が可能です。<br>希望機能はLINEにてご相談ください。</div>'
+    + '<div class="feats">' + featHtml + '</div>'
+    + '<h2>💎 プラン比較</h2>'
+    + '<div class="plans">' + planHtml + '</div>'
+    + '<div class="note-box">'
+    + '✅ 初月は<strong>全プラン・全機能が無料</strong>でお試しいただけます<br>'
+    + '✅ <strong>独自カスタマイズ</strong>にも対応しています<br>'
+    + 'ご希望の機能があればお気軽にLINEでご相談ください😊'
+    + '</div>'
+    + '<a class="cta" href="https://ozononix.com/contact">📩 お問い合わせ・お申し込みはこちら</a>'
     + '</div>'
     + '</body></html>';
 }
