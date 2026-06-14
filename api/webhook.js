@@ -12,7 +12,6 @@ const INTERNAL_BOT_TOKEN = process.env.INTERNAL_BOT_TOKEN || '';
 const INTERNAL_GROUP_ID  = 'C4bfc1aee984b5f5e350dc8423885ce96';
 
 const PLAN_INFO = {
-  'ライト':       { price: 1500 },
   'ベーシック':   { price: 1980 },
   'スタンダード': { price: 2980 },
   'プレミアム':   { price: 3980 },
@@ -20,7 +19,6 @@ const PLAN_INFO = {
 
 // プランごとのStripe支払いURL
 const STRIPE_PAYMENT_URLS = {
-  'ライト':       'https://buy.stripe.com/3cIaEPcF97mG5dHaAI0sU00',
   'ベーシック':   'https://buy.stripe.com/3cIaEPcF97mG5dHaAI0sU00',
   'スタンダード': 'https://buy.stripe.com/aFa28j34z4aucG9aAI0sU01',
   'プレミアム':   'https://buy.stripe.com/bJe6ozfRlayS35zgZ60sU02',
@@ -90,10 +88,10 @@ const KEYWORD_RULES = [
 // ==================== FAQ ====================
 const FAQ_DATA = {
   'シフトアプリ': [
-    { q: '料金はいくらですか？', a: '月額¥1,980〜です。スタッフ数に合わせてプランを選べます。\n・ベーシック（19名以下）：¥1,980/月\n・スタンダード（40名以下）：¥2,980/月\n・プレミアム（人数無制限）：¥3,980/月' },
+    { q: '料金はいくらですか？', a: '月額¥1,980〜です。スタッフ数に合わせてプランを選べます。\n・ベーシック（〜19名・1店舗）：¥1,980/月\n・スタンダード（〜40名・店舗無制限）：¥2,980/月\n・プレミアム（無制限・優先サポート）：¥3,980/月' },
     { q: '無料トライアルはありますか？', a: 'はい！初月1ヶ月間、全機能を無料でお試しいただけます😊\nまずはお気軽にお問い合わせください。' },
     { q: 'スマホで使えますか？', a: 'はい！スマホのホーム画面にインストールしてアプリとして使えます（PWA対応）。' },
-    { q: '何名まで登録できますか？', a: 'プランによって異なります。\n・ベーシック：19名以下\n・スタンダード：40名以下\n・プレミアム：無制限' },
+    { q: '何名まで登録できますか？', a: 'プランによって異なります。\n・ベーシック：〜19名（1店舗）\n・スタンダード：〜40名（店舗無制限）\n・プレミアム：無制限（店舗無制限）' },
     { q: '解約はできますか？', a: 'はい、解約はこの公式LINEで承っています。\n下のメニューの「規約・プランを確認」→「退会はこちら」よりお手続きください。月末までにお手続きいただくと翌月より解約となります。' },
     { q: 'データは安全ですか？', a: 'お客様ごとに専用のアプリを作成するため、部外者が干渉することはできない仕組みです🔒\nデータも世界水準のDBサービスで暗号化して管理しています。安心してご利用ください。' },
   ],
@@ -150,12 +148,25 @@ async function handleFollow(event) {
   // 既存ユーザー確認（ブロック解除・再登録対応）
   const userInfo = await gasPost('getUserInfo', { lineUserId: userId });
   if (userInfo.success) {
+    // 再登録前の会話状態（手続き途中）を保存しておく
+    const prevConvState = await gasPost('getConversationState', { lineUserId: userId });
+    const stateData = {
+      isReturning:   true,
+      inquiry:       userInfo.inquiry    || '',
+      plan:          userInfo.plan       || '',
+      trial:         userInfo.trial      || '',
+      userStatus:    userInfo.userStatus || '',
+      withdrawn:     userInfo.withdrawn  || false,
+      lastAction:    userInfo.lastAction || '',
+      prevState:     prevConvState?.state     || '',
+      prevStateData: prevConvState?.stateData || {},
+    };
     await Promise.all([
       client.replyMessage(event.replyToken, {
         type: 'text',
-        text: 'おかえりなさい！OZONONIXです😊\n以前ご登録いただいたことがあります。\nメールアドレスのご確認はセキュリティ強化のためです。\nご登録時のメールアドレスを教えてください📧',
+        text: 'おかえりなさい！OZONONIXです😊\n\n本人確認のため、ご登録時のメールアドレスを教えてください📧',
       }),
-      gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData: {} }),
+      gasPost('setConversationState', { lineUserId: userId, state: 'WAITING_EMAIL', stateData }),
     ]);
     return;
   }
@@ -206,8 +217,8 @@ async function handleFollow(event) {
           title: 'シフト管理アプリ',
           text: 'シフト管理・勤怠・集計まで完結 ¥1500〜',
           actions: [
-            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product2/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
+            { type: 'uri', label: '詳しい資料', uri: 'https://ozononix.com/product2/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://ozononix.com/contact' },
           ],
         },
         {
@@ -216,8 +227,8 @@ async function handleFollow(event) {
           title: 'HP作成',
           text: '丁寧なカウンセリングと高いカスタマイズ ¥50000〜',
           actions: [
-            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product1/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
+            { type: 'uri', label: '詳しい資料', uri: 'https://ozononix.com/product1/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://ozononix.com/contact' },
           ],
         },
         {
@@ -226,8 +237,8 @@ async function handleFollow(event) {
           title: '業務効率化アプリ制作',
           text: 'お客様に合わせたアプリを一から制作 ¥500000〜',
           actions: [
-            { type: 'uri', label: '詳しい資料', uri: 'https://harurururun.github.io/company-OZONONIX/product3/' },
-            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://harurururun.github.io/company-OZONONIX/contact' },
+            { type: 'uri', label: '詳しい資料', uri: 'https://ozononix.com/product3/' },
+            { type: 'uri', label: 'お問い合わせ開始', uri: 'https://ozononix.com/contact' },
           ],
         },
       ],
@@ -277,7 +288,7 @@ async function handleMessage(event) {
     case '問合せ対応_担当者':
       await Promise.all([
         client.replyMessage(event.replyToken, [
-          { type: 'text', text: '担当者にお繋ぎいたします。\nこちらに直接メッセージをお送りください😊\n担当者が確認次第、ご返信いたします。' },
+          { type: 'text', text: '担当者にお繋ぎいたします。\nこちらに直接メッセージをお送りください😊\n担当者または自動で返答いたします。' },
           { type: 'text', text: '💬 対応時間：平日 10:00〜18:00' },
         ]),
         sendEmail(lineUserId, 'お問い合わせ（ご質問・ご相談）から担当者対応が選ばれました。LINEで担当者対応をお願いします。'),
@@ -291,7 +302,7 @@ async function handleMessage(event) {
       return replyText(event.replyToken, 'ご相談の内容をキーワードで入力してください。\n（例：「料金」「機能」「セキュリティ」など）');
     case '問合せ種別_契約':
       return replyText(event.replyToken,
-        'ご契約のお申し込みはこちらのフォームよりお願いいたします😊\n\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。'
+        'ご契約のお申し込みはこちらのフォームよりお願いいたします😊\n\nhttps://ozononix.com/contact\n\nフォーム送信後、このLINEに自動で戻ってきます。'
       );
     case '問合せ種別_追加契約':
       return handleAdditionalContractSelect(event, lineUserId);
@@ -311,7 +322,7 @@ async function handleMessage(event) {
     case 'fd_staff':
       return client.replyMessage(event.replyToken, {
         type: 'text',
-        text: '担当者に直接ご連絡しますか？\n担当者が確認次第、ご返信いたします😊',
+        text: '担当者に直接ご連絡しますか？\n担当者または自動で返答いたします😊',
         quickReply: makeQuickReply([
           ['はい、お願いします', 'fc_staff_yes'],
           ['いいえ、大丈夫です', 'fc_staff_no'],
@@ -326,7 +337,7 @@ async function handleMessage(event) {
     // --- シフトアプリ詳細 ---
     case 'fd_shift_price':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【シフトアプリ 料金・プラン】\n\n📱 ベーシック（19名以下）：月額¥1,980\n📱 スタンダード（40名以下）：月額¥2,980\n📱 プレミアム（人数無制限）：月額¥3,980\n\n初月1ヶ月間・全機能無料でお試しいただけます！\n完全カスタマイズも対応可能です😊' },
+        { type: 'text', text: '【シフトアプリ 料金・プラン】\n\n📱 ベーシック（〜19名・1店舗）：月額¥1,980\n📱 スタンダード（〜40名・店舗無制限）：月額¥2,980\n📱 プレミアム（無制限・優先サポート）：月額¥3,980\n\n初月1ヶ月間・全機能無料でお試しいただけます！\n完全カスタマイズも対応可能です😊' },
         { type: 'text', text: 'ご不明な点はありますか？', quickReply: makeQuickReply([
           ['📝 お申し込みへ',  'シフト申し込み'],
           ['📱 シフトアプリ',  'シフトアプリ'],
@@ -349,7 +360,7 @@ async function handleMessage(event) {
       ]);
     case 'fd_shift_users':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【スタッフ人数について】\n\n・ベーシック：19名以下\n・スタンダード：40名以下\n・プレミアム：無制限\n\nスタッフ数が増えても、プラン変更で柔軟に対応できます😊' },
+        { type: 'text', text: '【スタッフ人数について】\n\n・ベーシック：〜19名（1店舗）\n・スタンダード：〜40名（店舗無制限）\n・プレミアム：無制限（店舗無制限）\n\nスタッフ数が増えても、プラン変更で柔軟に対応できます😊' },
         { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_shift_sec':
@@ -362,16 +373,16 @@ async function handleMessage(event) {
     case 'シフト申し込み':
       return client.replyMessage(event.replyToken, [
         { type: 'text', text: 'シフト管理アプリのお申し込みをご検討いただきありがとうございます😊\n\nご希望の機能やカスタマイズがあれば、この画面でそのままメッセージをお送りください。\n担当者が確認のうえアプリに反映いたします！' },
-        { type: 'text', text: 'ご希望のプランをお選びください👇\n\n📱 ベーシック（19名以下）：月額¥1,980\n📱 スタンダード（40名以下）：月額¥2,980\n📱 プレミアム（人数無制限）：月額¥3,980', quickReply: makeQuickReply([
-          ['ベーシック ¥1,980/月',   'シフト支払い_ライト'],
+        { type: 'text', text: 'ご希望のプランをお選びください👇\n\n📱 ベーシック（〜19名・1店舗）：月額¥1,980\n📱 スタンダード（〜40名・店舗無制限）：月額¥2,980\n📱 プレミアム（無制限・優先サポート）：月額¥3,980', quickReply: makeQuickReply([
+          ['ベーシック ¥1,980/月',   'シフト支払い_ベーシック'],
           ['スタンダード ¥2,980/月', 'シフト支払い_スタンダード'],
           ['プレミアム ¥3,980/月',   'シフト支払い_プレミアム'],
           ['担当者に相談',           '担当者に相談'],
         ]) },
       ]);
-    case 'シフト支払い_ライト':
+    case 'シフト支払い_ベーシック':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【ベーシックプラン 月額¥1,980】\n対象：スタッフ19名以下\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/3cIaEPcF97mG5dHaAI0sU00' },
+        { type: 'text', text: '【ベーシックプラン 月額¥1,980】\n対象：スタッフ〜19名・1店舗\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/3cIaEPcF97mG5dHaAI0sU00' },
         { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
           ['担当者に相談', '担当者に相談'],
           ['プランを変更', 'シフト申し込み'],
@@ -379,7 +390,7 @@ async function handleMessage(event) {
       ]);
     case 'シフト支払い_スタンダード':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【スタンダードプラン 月額¥2,980】\n対象：スタッフ40名以下\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/aFa28j34z4aucG9aAI0sU01' },
+        { type: 'text', text: '【スタンダードプラン 月額¥2,980】\n対象：スタッフ〜40名・店舗数無制限\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/aFa28j34z4aucG9aAI0sU01' },
         { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
           ['担当者に相談', '担当者に相談'],
           ['プランを変更', 'シフト申し込み'],
@@ -387,7 +398,7 @@ async function handleMessage(event) {
       ]);
     case 'シフト支払い_プレミアム':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【プレミアムプラン 月額¥3,980】\n対象：スタッフ人数無制限\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/bJe6ozfRlayS35zgZ60sU02' },
+        { type: 'text', text: '【プレミアムプラン 月額¥3,980】\n対象：スタッフ数・店舗数無制限・優先サポート\n\nこちらからお支払いをお願いいたします👇\nhttps://buy.stripe.com/bJe6ozfRlayS35zgZ60sU02' },
         { type: 'text', text: 'お支払い完了後、担当者よりアプリのセットアップについてご連絡いたします😊\nご不明な点があればお気軽にどうぞ！', quickReply: makeQuickReply([
           ['担当者に相談', '担当者に相談'],
           ['プランを変更', 'シフト申し込み'],
@@ -436,7 +447,7 @@ async function handleMessage(event) {
     // --- 料金詳細 ---
     case 'fd_price_shift':
       return client.replyMessage(event.replyToken, [
-        { type: 'text', text: '【シフトアプリ 月額料金】\n・ライト（最大10名）：¥1,500/月\n・スタンダード（最大30名）：¥3,000/月\n・プレミアム（無制限）：¥5,000/月\n\n他社と比べて圧倒的にお得です😊' },
+        { type: 'text', text: '【シフトアプリ 月額料金】\n・ベーシック（〜19名・1店舗）：¥1,980/月\n・スタンダード（〜40名・店舗無制限）：¥2,980/月\n・プレミアム（無制限・優先サポート）：¥3,980/月\n\n他社と比べて圧倒的にお得です😊' },
         { type: 'text', text: '他にご質問はありますか？', quickReply: consultFollowupQR() },
       ]);
     case 'fd_price_hp':
@@ -641,6 +652,8 @@ async function handleInquiryName(event, text, lineUserId, stateData) {
       details: stateData.details,
     }),
     gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+    gasPost('updateUserStatus', { lineUserId, status: '問い合わせ中' }),
+    gasPost('updateLastAction', { lineUserId, action_label: `お問い合わせ完了（${stateData.service}）` }),
     sendEmail(lineUserId, `LINEお問い合わせが完了しました。\nお名前：${text}\nサービス：${stateData.service}\n内容：${stateData.details}`),
     // 社内グループへ全内容通知
     notifyInternalGroup('inquiry_full', {
@@ -659,15 +672,66 @@ async function handleInquiryName(event, text, lineUserId, stateData) {
   ]);
 }
 
+// ==================== 他サービスカルーセル ====================
+function makeOtherServicesCarousel(currentInquiry) {
+  const all = [
+    {
+      key: 'シフト',
+      thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card1_shift.png',
+      title: 'シフト管理アプリ',
+      text: 'シフト管理・勤怠・集計まで完結 ¥1,980〜',
+      detailUri: 'https://ozononix.com/product2/',
+    },
+    {
+      key: 'HP',
+      thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card2_hp.png',
+      title: 'HP作成',
+      text: '丁寧なカウンセリングと高いカスタマイズ ¥50,000〜',
+      detailUri: 'https://ozononix.com/product1/',
+    },
+    {
+      key: 'アプリ',
+      thumbnailImageUrl: 'https://line-webhook-rho-one.vercel.app/card3_app.png',
+      title: '業務効率化アプリ制作',
+      text: 'お客様に合わせたアプリを一から制作 ¥500,000〜',
+      detailUri: 'https://ozononix.com/product3/',
+    },
+  ];
+  const filtered = currentInquiry
+    ? all.filter(s => !currentInquiry.includes(s.key))
+    : all;
+  const columns = (filtered.length > 0 ? filtered : all).map(s => ({
+    thumbnailImageUrl: s.thumbnailImageUrl,
+    imageAspectRatio: 'rectangle',
+    imageSize: 'cover',
+    title: s.title,
+    text: s.text,
+    actions: [
+      { type: 'uri', label: '詳しい資料', uri: s.detailUri },
+      { type: 'uri', label: 'お問い合わせ', uri: 'https://ozononix.com/contact' },
+    ],
+  }));
+  return {
+    type: 'template',
+    altText: '他のサービスのご紹介',
+    template: { type: 'carousel', columns },
+  };
+}
+
 // ==================== メール認証 → サービス判定 ====================
 async function handleEmailInput(event, email, lineUserId) {
+  // 現在の会話状態を取得（復帰ユーザーかどうか確認）
+  const currentState = await gasPost('getConversationState', { lineUserId });
+  const isReturning    = currentState?.stateData?.isReturning  || false;
+  const prevLastAction = currentState?.stateData?.lastAction   || '';
+
   const result = await gasPost('linkUser', { email, lineUserId });
 
   if (!result.success) {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
     return client.replyMessage(event.replyToken, {
       type: 'text',
-      text: 'メールアドレスが見つかりませんでした。\n\nまずウェブのお問い合わせフォームからお申し込みください👇\nhttps://harurururun.github.io/company-OZONONIX/contact\n\nお申し込み後、こちらでメールアドレスをご入力ください。',
+      text: 'メールアドレスが見つかりませんでした。\n\nまずウェブのお問い合わせフォームからお申し込みください👇\nhttps://ozononix.com/contact\n\nお申し込み後、こちらでメールアドレスをご入力ください。',
     });
   }
   await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
@@ -675,6 +739,139 @@ async function handleEmailInput(event, email, lineUserId) {
   const { inquiry, plan, trial } = result;
   const isShift = (inquiry && inquiry.includes('シフト')) || result.service === 'shift';
 
+  // ==================== 復帰ユーザー専用フロー ====================
+  if (isReturning) {
+    const prevState     = currentState?.stateData?.prevState     || '';
+    const prevStateData = currentState?.stateData?.prevStateData || {};
+    const savedStatus   = currentState?.stateData?.userStatus    || '';
+    const savedWithdrawn = currentState?.stateData?.withdrawn    || false;
+
+    // ---- パターン1: 手続き途中（前回の会話状態を復元）----
+    const MID_PROCESS_STATES = ['WAITING_CUSTOMIZATION', 'WAITING_CUSTOMIZATION_DETAILS'];
+    if (MID_PROCESS_STATES.includes(prevState)) {
+      await gasPost('setConversationState', { lineUserId, state: prevState, stateData: prevStateData });
+      const plan = prevStateData?.plan || '';
+      const resumeMessages = [
+        { type: 'text', text: '✅ 本人確認が完了しました😊\n\n以前の手続きの続きからご案内します。' },
+      ];
+      if (prevState === 'WAITING_CUSTOMIZATION') {
+        const featuresUrl = `${GAS_URL}?page=shift-features&plan=${encodeURIComponent(plan)}`;
+        resumeMessages.push({
+          type: 'text',
+          text: `シフトアプリの機能・プラン詳細はこちら👇\n${featuresUrl}`,
+        });
+        resumeMessages.push({
+          type: 'text',
+          text: '独自カスタマイズをご希望ですか？',
+          quickReply: makeQuickReply([['はい', 'カスタマイズ_はい'], ['いいえ', 'カスタマイズ_いいえ']]),
+        });
+      } else if (prevState === 'WAITING_CUSTOMIZATION_DETAILS') {
+        resumeMessages.push({
+          type: 'text',
+          text: 'カスタマイズの希望内容をメッセージでお送りください😊\n\n【記載例】\n・〇〇の機能を追加したい\n・画面デザインを変更したい',
+        });
+      }
+      await client.replyMessage(event.replyToken, resumeMessages);
+      return;
+    }
+
+    // ---- パターン2: 解約済み ----
+    if (savedWithdrawn || savedStatus === '解約済み') {
+      await client.replyMessage(event.replyToken, [
+        { type: 'text', text: 'お戻りいただきありがとうございます！😊\n以前OZONONIXをご利用いただいておりました。\n\n他のサービスもご用意しておりますのでぜひご覧ください👇' },
+        makeOtherServicesCarousel(''),
+        {
+          type: 'text',
+          text: '何かご質問はございますか？',
+          quickReply: makeQuickReply([
+            ['よくあるQ&A', 'よくあるQ&A'],
+            ['お問い合わせ', 'お問い合わせ開始'],
+          ]),
+        },
+      ]);
+      return;
+    }
+
+    // ---- パターン3: 支払い待ち ----
+    if (savedStatus === '支払い待ち') {
+      const paymentUrl = STRIPE_PAYMENT_URLS[plan] || '';
+      const msgs = [
+        {
+          type: 'text',
+          text: [
+            '✅ 本人確認が完了しました😊',
+            '',
+            '【ご利用状況】',
+            inquiry ? `📦 サービス: ${inquiry}` : '',
+            plan    ? `📋 プラン: ${plan}（¥${(PLAN_INFO[plan]?.price || 0).toLocaleString()}/月）` : '',
+            '⏳ ステータス: お支払い待ち',
+          ].filter(Boolean).join('\n'),
+        },
+      ];
+      if (paymentUrl) {
+        msgs.push({ type: 'text', text: `お支払いはこちらから完了できます👇\n${paymentUrl}` });
+      }
+      msgs.push({
+        type: 'text',
+        text: 'ご不明な点はございますか？',
+        quickReply: makeQuickReply([['担当者に相談', '担当者に相談'], ['よくあるQ&A', 'よくあるQ&A']]),
+      });
+      await client.replyMessage(event.replyToken, msgs);
+      return;
+    }
+
+    // ---- パターン4: 問い合わせ中（担当者確認待ち）----
+    if (savedStatus === '問い合わせ中') {
+      await client.replyMessage(event.replyToken, [
+        {
+          type: 'text',
+          text: [
+            '✅ 本人確認が完了しました😊',
+            '',
+            '【ご利用状況】',
+            inquiry ? `📦 サービス: ${inquiry}` : '',
+            '⏳ ステータス: 担当者が確認中です',
+          ].filter(Boolean).join('\n'),
+        },
+        {
+          type: 'text',
+          text: '追加のご質問はございますか？',
+          quickReply: makeQuickReply([
+            ['よくあるQ&A', 'よくあるQ&A'],
+            ['担当者に相談', '担当者に相談'],
+            ['お問い合わせ', 'お問い合わせ開始'],
+          ]),
+        },
+      ]);
+      return;
+    }
+
+    // ---- パターン5: 利用中 / その他（手続き完了ユーザー）----
+    const welcomeText = [
+      '✅ 本人確認が完了しました😊',
+      '',
+      '【ご利用中のサービス】',
+      inquiry            ? `📦 ${inquiry}` : '',
+      (isShift && plan)  ? `📋 プラン: ${plan}（¥${(PLAN_INFO[plan]?.price || 0).toLocaleString()}/月）` : '',
+      prevLastAction     ? `🕐 最後の操作: ${prevLastAction}` : '',
+    ].filter(Boolean).join('\n');
+
+    const qrOptions = [
+      ['よくあるQ&A', 'よくあるQ&A'],
+      ['お問い合わせ', 'お問い合わせ開始'],
+      ...(isShift ? [['プラン・規約を確認', '規約・プランを確認']] : []),
+    ];
+
+    await client.replyMessage(event.replyToken, [
+      { type: 'text', text: welcomeText },
+      { type: 'text', text: '他のサービスもご覧いただけます👇' },
+      makeOtherServicesCarousel(inquiry || ''),
+      { type: 'text', text: '何かご質問はございますか？', quickReply: makeQuickReply(qrOptions) },
+    ]);
+    return;
+  }
+
+  // ==================== 新規ユーザーフロー ====================
   if (isShift) {
     const planMeta = PLAN_INFO[plan] || {};
     const featuresUrl = `${GAS_URL}?page=shift-features&plan=${encodeURIComponent(plan || '')}`;
@@ -734,6 +931,8 @@ async function handleCustomizationReply(event, text, lineUserId, stateData) {
     }
     await Promise.all([
       client.replyMessage(event.replyToken, messages),
+      gasPost('updateUserStatus', { lineUserId, status: '支払い待ち' }),
+      gasPost('updateLastAction', { lineUserId, action_label: `カスタマイズ不要・支払い待ち（${plan}）` }),
       sendEmail(lineUserId, `シフトアプリ契約者がカスタマイズ不要と回答しました。専用アプリの制作を開始してください。プラン：${plan}`),
     ]);
     return;
@@ -753,6 +952,8 @@ async function handleCustomizationDetails(event, lineUserId, stateData) {
   await Promise.all([
     gasPost('saveCustomization', { lineUserId, content: customText }),
     gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+    gasPost('updateUserStatus', { lineUserId, status: '支払い待ち' }),
+    gasPost('updateLastAction', { lineUserId, action_label: `カスタマイズ要望送信・支払い待ち（${plan}）` }),
     sendEmail(lineUserId, `シフトアプリ契約者からカスタマイズ要望が届きました。内容：${customText}\nプラン：${plan}`),
   ]);
   const messages = [
@@ -786,7 +987,7 @@ async function handlePlanCheck(event) {
     budget ? `💰 ご予算: ${budget}` : '',
   ].filter(Boolean).join('\n');
 
-  const agreementsText = '【同意事項・規約】\n・個人情報保護方針\n・特定商取引法に基づく表記\n・利用規約\n\n詳細はこちらよりご確認ください👇\nhttps://harurururun.github.io/company-OZONONIX/contact';
+  const agreementsText = '【同意事項・規約】\n・個人情報保護方針\n・特定商取引法に基づく表記\n・利用規約\n\n詳細はこちらよりご確認ください👇\nhttps://ozononix.com/contact';
 
   const options = [
     ['情報変更', '情報変更'],
@@ -907,7 +1108,11 @@ async function handlePlanChangeConfirm(event, text, lineUserId, stateData) {
     const result = await gasPost('changePlan', { lineUserId, newPlan: stateData.newPlan });
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
     if (result.success) {
-      await sendEmail(lineUserId, `プランが変更されました。\n変更前: ${stateData.currentPlan}\n変更後: ${stateData.newPlan}\n翌月より新プランが適用されます。`);
+      await Promise.all([
+        sendEmail(lineUserId, `プランが変更されました。\n変更前: ${stateData.currentPlan}\n変更後: ${stateData.newPlan}\n翌月より新プランが適用されます。`),
+        gasPost('updateUserStatus', { lineUserId, status: '利用中' }),
+        gasPost('updateLastAction', { lineUserId, action_label: `プラン変更（${stateData.currentPlan}→${stateData.newPlan}）` }),
+      ]);
       return replyText(event.replyToken, `プランを「${stateData.newPlan}」に変更しました。\n翌月より新プランが適用されます。`);
     } else if (result.reason === 'too_soon') {
       return replyText(event.replyToken, `プラン変更は2ヶ月に1度のみ可能です。\n次回変更可能日: ${result.nextAvailable}`);
@@ -935,6 +1140,8 @@ async function handleWithdrawConfirm(event, text, lineUserId) {
     await Promise.all([
       gasPost('withdraw', { lineUserId }),
       gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+      gasPost('updateUserStatus', { lineUserId, status: '解約済み' }),
+      gasPost('updateLastAction', { lineUserId, action_label: '退会手続き完了' }),
       sendEmail(lineUserId, `退会処理が完了しました。\nLINEユーザーID: ${lineUserId}\n対応が必要な場合はご確認ください。`),
     ]);
     return replyText(event.replyToken, '退会処理が完了しました。\nご利用いただきありがとうございました。');
@@ -1138,7 +1345,7 @@ async function handleConsultStaff(event, lineUserId) {
 async function handleFreeConsultKeyword(event, text, lineUserId) {
   await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
 
-  const contactUrl = 'https://harurururun.github.io/company-OZONONIX/contact';
+  const contactUrl = 'https://ozononix.com/contact';
   const contactMsg = {
     type: 'text',
     text: '他にご不明な点がございましたらお気軽にどうぞ😊\n\n📩 お問い合わせはこちら\n' + contactUrl,
@@ -1225,7 +1432,7 @@ async function handleAdditionalContractShift(event, lineUserId) {
     { type: 'text', text: 'シフト管理アプリのご契約をご希望いただきありがとうございます！' },
     {
       type: 'text',
-      text: '【シフトアプリ プラン】\n📱 ライト（最大10名）：¥1,500/月\n📱 スタンダード（最大30名）：¥3,000/月\n📱 プレミアム（人数無制限）：¥5,000/月\n\nプランは担当者がご確認のうえご案内いたします。',
+      text: '【シフトアプリ プラン】\n📱 ベーシック（〜19名・1店舗）：¥1,980/月\n📱 スタンダード（〜40名・店舗無制限）：¥2,980/月\n📱 プレミアム（無制限・優先サポート）：¥3,980/月\n\nプランは担当者がご確認のうえご案内いたします。',
     },
     {
       type: 'text',

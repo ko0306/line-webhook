@@ -6,79 +6,46 @@
 
 const SS_ID = '1lDygFxhG1DdrWA-LKsAqUYVLOQfSc83KOf6Nr7hySs8';
 
-// 列番号定数（1始まり）
 const COL = {
-  EMAIL:            4,   // D: メールアドレス
-  SERVICE:          6,   // F: お問い合わせ内容（サービス種別）
-  PLAN:             7,   // G: プラン（シフトアプリのみ）
-  TRIAL:            8,   // H: 無料トライアル希望
-  BUDGET:           9,   // I: ご予算
-  LINE_USER_ID:    14,   // N: LINEユーザーID（Rから変更）
-  LAST_PLAN_CHANGE:18,   // R: 最終プラン変更日
-  WITHDRAWN:       19,   // S: 退会フラグ
+  EMAIL:            4,
+  SERVICE:          6,
+  PLAN:             7,
+  TRIAL:            8,
+  BUDGET:           9,
+  LINE_USER_ID:    14,
+  LAST_PLAN_CHANGE:18,
+  WITHDRAWN:       19,
+  LAST_ACTION:     20,
+  USER_STATUS:     21,
 };
 
-// プラン定義（実際のプラン名・価格に合わせて変更してください）
 const PLANS = {
-  'ライト': {
-    price: 1500,
-    maxUsers: 10,
-    features: [
-      '✅ 基本シフト作成（月次）',
-      '✅ 勤怠記録',
-      '✅ CSV出力（月次）',
-      '❌ シフト申請機能',
-      '❌ メール通知',
-      '❌ 給与計算連携',
-    ],
-  },
-  'スタンダード': {
-    price: 3000,
-    maxUsers: 30,
-    features: [
-      '✅ 基本シフト作成（日次・月次）',
-      '✅ 勤怠記録',
-      '✅ CSV出力（日次・月次）',
-      '✅ シフト申請機能',
-      '✅ メール通知',
-      '❌ 給与計算連携',
-    ],
-  },
-  'プレミアム': {
-    price: 5000,
-    maxUsers: null,
-    features: [
-      '✅ 基本シフト作成（日次・月次）',
-      '✅ 勤怠記録',
-      '✅ CSV出力（日次・月次）',
-      '✅ シフト申請機能',
-      '✅ メール通知',
-      '✅ 給与計算連携',
-      '✅ 多店舗管理',
-      '✅ 優先サポート',
-    ],
-  },
+  'ベーシック':   { price: 1980, maxUsers: 19 },
+  'スタンダード': { price: 2980, maxUsers: 40 },
+  'プレミアム':   { price: 3980, maxUsers: null },
 };
 
 // ================================================================
-// doPost（APIエンドポイント）
+// doPost
 // ================================================================
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     switch (data.action) {
-      case 'saveUserService':      return saveUserService(data);
-      case 'linkUser':             return linkUser(data);
-      case 'getUserInfo':          return getUserInfo(data);
-      case 'getUserPlan':          return getUserPlan(data);
-      case 'changePlan':           return changePlan(data);
-      case 'updateUserInfo':       return updateUserInfo(data);
-      case 'withdraw':             return withdrawUser(data);
-      case 'getConversationState': return getConversationState(data);
-      case 'setConversationState': return setConversationState(data);
-      case 'saveInquiry':          return saveInquiry(data);
-      case 'saveCustomization':       return saveCustomization(data);
-      case 'sendNotificationEmail':   return sendNotificationEmail(data);
+      case 'saveUserService':       return saveUserService(data);
+      case 'linkUser':              return linkUser(data);
+      case 'getUserInfo':           return getUserInfo(data);
+      case 'getUserPlan':           return getUserPlan(data);
+      case 'changePlan':            return changePlan(data);
+      case 'updateUserInfo':        return updateUserInfo(data);
+      case 'withdraw':              return withdrawUser(data);
+      case 'getConversationState':  return getConversationState(data);
+      case 'setConversationState':  return setConversationState(data);
+      case 'saveInquiry':           return saveInquiry(data);
+      case 'saveCustomization':     return saveCustomization(data);
+      case 'sendNotificationEmail': return sendNotificationEmail(data);
+      case 'updateLastAction':      return updateLastAction(data);
+      case 'updateUserStatus':     return updateUserStatus(data);
       default:
         return jsonResponse({ success: false, error: 'Unknown action' });
     }
@@ -88,12 +55,11 @@ function doPost(e) {
 }
 
 // ================================================================
-// doGet（シフトアプリ機能ページ）
+// doGet
 // ================================================================
 function doGet(e) {
   const page = (e.parameter && e.parameter.page) || '';
   const plan  = (e.parameter && e.parameter.plan)  || '';
-
   if (page === 'shift-features') {
     return HtmlService.createHtmlOutput(buildShiftFeaturesHtml(plan))
       .setTitle('シフトアプリ 機能・プラン一覧')
@@ -117,7 +83,7 @@ function saveUserService(data) {
 }
 
 // ================================================================
-// linkUser（メールとLINEユーザーIDを紐付け）
+// linkUser
 // ================================================================
 function linkUser(data) {
   const ss = SpreadsheetApp.openById(SS_ID);
@@ -126,7 +92,6 @@ function linkUser(data) {
 
   const emailValues = sheet.getRange('D:D').getValues();
 
-  // サービス種別をLINE追跡シートから取得
   let service = 'other';
   const trackingSheet = ss.getSheetByName('LINE追跡');
   if (trackingSheet) {
@@ -145,15 +110,15 @@ function linkUser(data) {
     if (cellEmail && cellEmail === inputEmail) {
       const row = i + 1;
       sheet.getRange(row, COL.LINE_USER_ID).setValue(data.lineUserId);
-
-      const inquiry = getLatestCellValue(sheet.getRange(row, COL.SERVICE));
-      const plan    = getLatestCellValue(sheet.getRange(row, COL.PLAN));
-      const trial   = getLatestCellValue(sheet.getRange(row, COL.TRIAL));
-
-      return jsonResponse({ success: true, service, inquiry, plan, trial });
+      const inquiry    = getLatestCellValue(sheet.getRange(row, COL.SERVICE));
+      const plan       = getLatestCellValue(sheet.getRange(row, COL.PLAN));
+      const trial      = getLatestCellValue(sheet.getRange(row, COL.TRIAL));
+      const withdrawn  = sheet.getRange(row, COL.WITHDRAWN).getValue();
+      const statusRaw  = sheet.getRange(row, COL.USER_STATUS).getValue() || '';
+      const userStatus = statusRaw.split('  [')[0].trim();
+      return jsonResponse({ success: true, service, inquiry, plan, trial, withdrawn: !!withdrawn, userStatus });
     }
   }
-
   return jsonResponse({ success: false, service });
 }
 
@@ -166,7 +131,6 @@ function getUserInfo(data) {
 
   const ss = SpreadsheetApp.openById(SS_ID);
   const sheet = ss.getSheetByName('お問い合わせ');
-
   const email    = getLatestCellValue(sheet.getRange(row, COL.EMAIL));
   const inquiry  = getLatestCellValue(sheet.getRange(row, COL.SERVICE));
   const plan     = getLatestCellValue(sheet.getRange(row, COL.PLAN));
@@ -174,10 +138,17 @@ function getUserInfo(data) {
   const budget   = getLatestCellValue(sheet.getRange(row, COL.BUDGET));
   const withdrawn = sheet.getRange(row, COL.WITHDRAWN).getValue();
   const lastPlanChange = sheet.getRange(row, COL.LAST_PLAN_CHANGE).getValue();
+  const lastActionRaw = sheet.getRange(row, COL.LAST_ACTION).getValue() || '';
+  const userStatusRaw = sheet.getRange(row, COL.USER_STATUS).getValue() || '';
+  // ステータス文字列から日時部分を除去して返す
+  const lastAction = lastActionRaw.split('  [')[0].trim();
+  const userStatus = userStatusRaw.split('  [')[0].trim();
 
   return jsonResponse({
     success: true, email, inquiry, plan, trial, budget,
     withdrawn: !!withdrawn,
+    lastAction,
+    userStatus,
     lastPlanChange: lastPlanChange
       ? Utilities.formatDate(new Date(lastPlanChange), 'Asia/Tokyo', 'yyyy/MM/dd')
       : null,
@@ -190,7 +161,6 @@ function getUserInfo(data) {
 function getUserPlan(data) {
   const row = findUserRow(data.lineUserId);
   if (!row) return jsonResponse({ success: false });
-
   const ss = SpreadsheetApp.openById(SS_ID);
   const sheet = ss.getSheetByName('お問い合わせ');
   const plan = getLatestCellValue(sheet.getRange(row, COL.PLAN));
@@ -198,7 +168,7 @@ function getUserPlan(data) {
 }
 
 // ================================================================
-// changePlan（2ヶ月制限付き・履歴記録）
+// changePlan
 // ================================================================
 function changePlan(data) {
   const row = findUserRow(data.lineUserId);
@@ -206,8 +176,6 @@ function changePlan(data) {
 
   const ss = SpreadsheetApp.openById(SS_ID);
   const sheet = ss.getSheetByName('お問い合わせ');
-
-  // 2ヶ月制限チェック
   const lastChangeVal = sheet.getRange(row, COL.LAST_PLAN_CHANGE).getValue();
   if (lastChangeVal) {
     const lastDate = new Date(lastChangeVal);
@@ -224,32 +192,23 @@ function changePlan(data) {
       });
     }
   }
-
-  // G列を履歴付きで更新
   updateCellWithHistory(sheet.getRange(row, COL.PLAN), data.newPlan);
   sheet.getRange(row, COL.LAST_PLAN_CHANGE).setValue(new Date());
-
   return jsonResponse({ success: true });
 }
 
 // ================================================================
-// updateUserInfo（履歴付き更新）
+// updateUserInfo
 // ================================================================
 function updateUserInfo(data) {
   const row = findUserRow(data.lineUserId);
   if (!row) return jsonResponse({ success: false, error: 'user not found' });
-
-  const colMap = {
-    email:  COL.EMAIL,
-    budget: COL.BUDGET,
-  };
+  const colMap = { email: COL.EMAIL, budget: COL.BUDGET };
   const col = colMap[data.field];
   if (!col) return jsonResponse({ success: false, error: 'invalid field' });
-
   const ss = SpreadsheetApp.openById(SS_ID);
   const sheet = ss.getSheetByName('お問い合わせ');
   updateCellWithHistory(sheet.getRange(row, col), data.value);
-
   return jsonResponse({ success: true });
 }
 
@@ -259,7 +218,6 @@ function updateUserInfo(data) {
 function withdrawUser(data) {
   const row = findUserRow(data.lineUserId);
   if (!row) return jsonResponse({ success: false, error: 'user not found' });
-
   const ss = SpreadsheetApp.openById(SS_ID);
   const sheet = ss.getSheetByName('お問い合わせ');
   sheet.getRange(row, COL.WITHDRAWN).setValue(
@@ -269,7 +227,7 @@ function withdrawUser(data) {
 }
 
 // ================================================================
-// saveInquiry（LINEお問い合わせフロー）
+// saveInquiry
 // ================================================================
 function saveInquiry(data) {
   const ss = SpreadsheetApp.openById(SS_ID);
@@ -290,7 +248,7 @@ function saveInquiry(data) {
 }
 
 // ================================================================
-// sendNotificationEmail（担当者へメール通知）
+// sendNotificationEmail
 // ================================================================
 function sendNotificationEmail(data) {
   const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
@@ -305,7 +263,6 @@ function sendNotificationEmail(data) {
     'https://manager.line.biz/',
   ].join('\n');
 
-  // スプレッドシートにログを記録（メール失敗時のバックアップ）
   try {
     const ss = SpreadsheetApp.openById(SS_ID);
     let logSheet = ss.getSheetByName('通知ログ');
@@ -316,7 +273,6 @@ function sendNotificationEmail(data) {
     logSheet.appendRow([now, data.lineUserId || '', data.message || '', '送信中...']);
     const lastRow = logSheet.getLastRow();
 
-    // メール送信
     MailApp.sendEmail({
       to: 'joudencompany@gmail.com',
       subject: '【OZONOIX LINE】お問い合わせが届きました',
@@ -326,20 +282,17 @@ function sendNotificationEmail(data) {
     logSheet.getRange(lastRow, 4).setValue('送信成功');
     return jsonResponse({ success: true });
   } catch (err) {
-    // ログシートに失敗を記録
     try {
-      const ss = SpreadsheetApp.openById(SS_ID);
-      const logSheet = ss.getSheetByName('通知ログ');
-      if (logSheet) {
-        logSheet.getRange(logSheet.getLastRow(), 4).setValue('失敗: ' + err.message);
-      }
+      const ss2 = SpreadsheetApp.openById(SS_ID);
+      const logSheet2 = ss2.getSheetByName('通知ログ');
+      if (logSheet2) logSheet2.getRange(logSheet2.getLastRow(), 4).setValue('失敗: ' + err.message);
     } catch (_) {}
     return jsonResponse({ success: false, error: err.message });
   }
 }
 
 // ================================================================
-// saveCustomization（カスタマイズ希望内容を保存）
+// saveCustomization
 // ================================================================
 function saveCustomization(data) {
   const ss = SpreadsheetApp.openById(SS_ID);
@@ -400,6 +353,32 @@ function getOrCreateStateSheet() {
 }
 
 // ================================================================
+// updateLastAction
+// ================================================================
+function updateLastAction(data) {
+  const row = findUserRow(data.lineUserId);
+  if (!row) return jsonResponse({ success: false, error: 'user not found' });
+  const ss = SpreadsheetApp.openById(SS_ID);
+  const sheet = ss.getSheetByName('お問い合わせ');
+  const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  sheet.getRange(row, COL.LAST_ACTION).setValue(data.action_label + '  [' + now + ']');
+  return jsonResponse({ success: true });
+}
+
+// ================================================================
+// updateUserStatus
+// ================================================================
+function updateUserStatus(data) {
+  const row = findUserRow(data.lineUserId);
+  if (!row) return jsonResponse({ success: false, error: 'user not found' });
+  const ss = SpreadsheetApp.openById(SS_ID);
+  const sheet = ss.getSheetByName('お問い合わせ');
+  const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  sheet.getRange(row, COL.USER_STATUS).setValue(data.status + '  [' + now + ']');
+  return jsonResponse({ success: true });
+}
+
+// ================================================================
 // ヘルパー関数
 // ================================================================
 function findUserRow(lineUserId) {
@@ -414,7 +393,6 @@ function findUserRow(lineUserId) {
 }
 
 function getLatestCellValue(range) {
-  // getValue()で取得し最後の行が最新値
   const value = String(range.getValue() || '').trim();
   if (!value) return '';
   const lines = value.split('\n');
@@ -427,19 +405,15 @@ function updateCellWithHistory(range, newValue) {
     range.setValue(newValue);
     return;
   }
-
   const changeDate = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd');
   const dateSuffix = '  [変更日:' + changeDate + ']';
   const fullText = oldText + dateSuffix + '\n' + newValue;
-
   const strikeStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
   const redStyle    = SpreadsheetApp.newTextStyle().setForegroundColor('#FF0000').setStrikethrough(false).build();
   const normalStyle = SpreadsheetApp.newTextStyle().setStrikethrough(false).setForegroundColor('#000000').build();
-
   const oldEnd    = oldText.length;
   const suffixEnd = oldEnd + dateSuffix.length;
-  const newStart  = suffixEnd + 1; // +1 for \n
-
+  const newStart  = suffixEnd + 1;
   try {
     const richText = SpreadsheetApp.newRichTextValue()
       .setText(fullText)
@@ -461,11 +435,9 @@ function jsonResponse(obj) {
 }
 
 // ================================================================
-// シフトアプリ機能ページ HTML（実際のアプリ機能に基づく）
+// シフトアプリ機能ページ HTML
 // ================================================================
 function buildShiftFeaturesHtml(currentPlan) {
-
-  // ---- 全プラン共通機能 ----
   var commonFeatures = [
     { icon: '📅', title: 'シフト閲覧', desc: 'カレンダー＆タイムライン形式で確認' },
     { icon: '⏰', title: '勤怠打刻', desc: '出勤・退勤・休憩開始・休憩終了をスマホから記録' },
@@ -475,46 +447,35 @@ function buildShiftFeaturesHtml(currentPlan) {
     { icon: '✏️', title: '修正申請', desc: '打刻ミスをスマホから申請・承認' },
     { icon: '🚃', title: '交通費記録', desc: '出勤ごとの交通費を記録・集計' },
   ];
-
-  // ---- プラン別機能 ----
   var planFeatures = {
-    'ライト': [
-      { ok: true,  text: 'スタッフ数：〜10名' },
-      { ok: true,  text: 'シフト作成・編集（月次）' },
-      { ok: true,  text: 'CSV出力（月次）' },
-      { ok: false, text: 'プッシュ通知（シフト更新お知らせ）' },
-      { ok: false, text: 'シフト分析ダッシュボード' },
-      { ok: false, text: '多店舗管理' },
-      { ok: false, text: '給与計算連携' },
+    'ベーシック': [
+      { ok: true,  text: 'スタッフ数：〜19名' },
+      { ok: true,  text: '1店舗' },
+      { ok: true,  text: 'プッシュ通知' },
+      { ok: true,  text: '公式LINE対応' },
+      { ok: false, text: '店舗数無制限' },
+      { ok: false, text: '優先サポート' },
     ],
     'スタンダード': [
-      { ok: true,  text: 'スタッフ数：〜30名' },
-      { ok: true,  text: 'シフト作成・編集（日次・月次）' },
-      { ok: true,  text: 'CSV出力（日次・月次）' },
-      { ok: true,  text: 'プッシュ通知（シフト更新お知らせ）' },
-      { ok: true,  text: 'シフト分析ダッシュボード（年間・月間・週間）' },
-      { ok: false, text: '多店舗管理' },
-      { ok: false, text: '給与計算連携' },
+      { ok: true,  text: 'スタッフ数：〜40名' },
+      { ok: true,  text: '店舗数無制限' },
+      { ok: true,  text: 'プッシュ通知' },
+      { ok: true,  text: '公式LINE対応' },
+      { ok: false, text: '優先サポート' },
     ],
     'プレミアム': [
       { ok: true, text: 'スタッフ数：無制限' },
-      { ok: true, text: 'シフト作成・編集（日次・月次）' },
-      { ok: true, text: 'CSV出力（日次・月次）' },
-      { ok: true, text: 'プッシュ通知（シフト更新お知らせ）' },
-      { ok: true, text: 'シフト分析ダッシュボード（年間・月間・週間）' },
-      { ok: true, text: '多店舗管理' },
-      { ok: true, text: '給与計算連携' },
+      { ok: true, text: '店舗数無制限' },
+      { ok: true, text: 'プッシュ通知' },
+      { ok: true, text: '公式LINE対応' },
+      { ok: true, text: '優先サポート' },
     ],
   };
-
-  // ---- 共通機能カード ----
   var commonHtml = commonFeatures.map(function(f) {
     return '<div class="feat"><span class="ficon">' + f.icon + '</span>'
       + '<div><div class="ftitle">' + f.title + '</div>'
       + '<div class="fdesc">' + f.desc + '</div></div></div>';
   }).join('');
-
-  // ---- プランカード ----
   var planCards = Object.entries(PLANS).map(function(entry) {
     var name = entry[0];
     var info = entry[1];
@@ -531,34 +492,30 @@ function buildShiftFeaturesHtml(currentPlan) {
       + '<table>' + rows + '</table>'
       + '</div>';
   }).join('');
-
-  var css = [
-    '*{box-sizing:border-box;margin:0;padding:0}',
-    'body{font-family:"Hiragino Kaku Gothic ProN",sans-serif;background:#f0f4f8;color:#333;padding:16px 12px 40px}',
-    'h1{text-align:center;color:#06C755;font-size:20px;margin-bottom:4px}',
-    '.hero-sub{text-align:center;color:#888;font-size:12px;margin-bottom:20px}',
-    'h2{font-size:15px;font-weight:bold;margin:20px 0 10px;color:#444}',
-    '.features{display:flex;flex-direction:column;gap:8px;max-width:480px;margin:0 auto}',
-    '.feat{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}',
-    '.ficon{font-size:22px;flex-shrink:0}',
-    '.ftitle{font-size:14px;font-weight:bold;margin-bottom:2px}',
-    '.fdesc{font-size:12px;color:#666}',
-    '.cards{display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto}',
-    '.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border:2px solid transparent;position:relative}',
-    '.card.current{border-color:#06C755}',
-    '.badge{position:absolute;top:-10px;right:14px;background:#06C755;color:#fff;padding:2px 12px;border-radius:20px;font-size:11px;font-weight:bold}',
-    '.pname{font-size:18px;font-weight:bold;margin-bottom:4px}',
-    '.price{font-size:24px;font-weight:bold;color:#06C755;margin-bottom:2px}',
-    '.price span{font-size:13px;color:#888}',
-    '.users{font-size:12px;color:#999;margin-bottom:10px}',
-    'table{width:100%;border-collapse:collapse}',
-    'td{font-size:13px;padding:5px 4px;border-bottom:1px solid #f5f5f5}',
-    'td.ok,td.ng{width:28px;text-align:center}',
-    'tr:last-child td{border-bottom:none}',
-    '.note{text-align:center;font-size:12px;color:#888;margin:16px auto 0;padding:14px;background:#fff;border-radius:10px;max-width:480px;line-height:1.7}',
-    '.wrap{max-width:480px;margin:0 auto}',
-  ].join('');
-
+  var css = '*{box-sizing:border-box;margin:0;padding:0}'
+    + 'body{font-family:"Hiragino Kaku Gothic ProN",sans-serif;background:#f0f4f8;color:#333;padding:16px 12px 40px}'
+    + 'h1{text-align:center;color:#06C755;font-size:20px;margin-bottom:4px}'
+    + '.hero-sub{text-align:center;color:#888;font-size:12px;margin-bottom:20px}'
+    + 'h2{font-size:15px;font-weight:bold;margin:20px 0 10px;color:#444}'
+    + '.features{display:flex;flex-direction:column;gap:8px;max-width:480px;margin:0 auto}'
+    + '.feat{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}'
+    + '.ficon{font-size:22px;flex-shrink:0}'
+    + '.ftitle{font-size:14px;font-weight:bold;margin-bottom:2px}'
+    + '.fdesc{font-size:12px;color:#666}'
+    + '.cards{display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto}'
+    + '.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border:2px solid transparent;position:relative}'
+    + '.card.current{border-color:#06C755}'
+    + '.badge{position:absolute;top:-10px;right:14px;background:#06C755;color:#fff;padding:2px 12px;border-radius:20px;font-size:11px;font-weight:bold}'
+    + '.pname{font-size:18px;font-weight:bold;margin-bottom:4px}'
+    + '.price{font-size:24px;font-weight:bold;color:#06C755;margin-bottom:2px}'
+    + '.price span{font-size:13px;color:#888}'
+    + '.users{font-size:12px;color:#999;margin-bottom:10px}'
+    + 'table{width:100%;border-collapse:collapse}'
+    + 'td{font-size:13px;padding:5px 4px;border-bottom:1px solid #f5f5f5}'
+    + 'td.ok,td.ng{width:28px;text-align:center}'
+    + 'tr:last-child td{border-bottom:none}'
+    + '.note{text-align:center;font-size:12px;color:#888;margin:16px auto 0;padding:14px;background:#fff;border-radius:10px;max-width:480px;line-height:1.7}'
+    + '.wrap{max-width:480px;margin:0 auto}';
   return '<!DOCTYPE html><html lang="ja"><head>'
     + '<meta charset="UTF-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -572,11 +529,7 @@ function buildShiftFeaturesHtml(currentPlan) {
     + '<div class="features">' + commonHtml + '</div>'
     + '<h2>💎 プラン別の機能</h2>'
     + '<div class="cards">' + planCards + '</div>'
-    + '<div class="note">'
-    + 'これら以外にも<strong>独自カスタマイズ</strong>が可能です。<br>'
-    + '希望機能はLINEにてご相談ください。<br>'
-    + '<small>※ カスタマイズ内容によっては対応できない場合もあります</small>'
-    + '</div>'
+    + '<div class="note">これら以外にも<strong>独自カスタマイズ</strong>が可能です。<br>希望機能はLINEにてご相談ください。</div>'
     + '</div>'
     + '</body></html>';
 }
