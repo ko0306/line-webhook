@@ -1019,7 +1019,7 @@ async function handleCustomizationReply(event, text, lineUserId, stateData) {
   if (text === 'カスタマイズ_いいえ') {
     await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
     const messages = [
-      { type: 'text', text: 'カスタマイズについてのご質問ありがとうございます！' },
+      { type: 'text', text: 'ご回答いただきありがとうございます！' },
       { type: 'text', text: 'ありがとうございます。\n担当者にお繋ぎいたします。\n\n現在お客様専用のアプリを制作中でございます。\n完成次第、担当者よりご連絡いたします。\nどうぞよろしくお願いいたします😊' },
     ];
     if (paymentUrl) {
@@ -1039,7 +1039,7 @@ async function handleCustomizationReply(event, text, lineUserId, stateData) {
   if (text === 'カスタマイズ_はい') {
     await gasPost('setConversationState', { lineUserId, state: 'WAITING_CUSTOMIZATION_DETAILS', stateData });
     return replyText(event.replyToken,
-      'カスタマイズについてのご質問ありがとうございます！\n\nどのような変更・機能追加をご希望でしょうか？\nできる限り具体的にお教えいただけますと、よりスムーズに対応できます😊\n\n【記載例】\n・〇〇という機能を追加したい\n・画面のデザインを〇〇のようにしたい\n・〇〇の操作をもっと簡単にしたい\n\nご希望をそのままメッセージでお送りください👇'
+      'ご回答いただきありがとうございます！\n\nどのような変更・機能追加をご希望でしょうか？\nできる限り具体的にお教えいただけますと、よりスムーズに対応できます😊\n\n【記載例】\n・〇〇という機能を追加したい\n・画面のデザインを〇〇のようにしたい\n・〇〇の操作をもっと簡単にしたい\n\nご希望をそのままメッセージでお送りください👇'
     );
   }
 }
