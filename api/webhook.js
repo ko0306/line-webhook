@@ -263,10 +263,6 @@ async function handleMessage(event) {
   const text = event.message.text.trim();
   const lineUserId = event.source.userId;
 
-  // 全メッセージを社内グループへ通知（fire-and-forget）
-  notifyInternalGroup('new_message', {
-    message: `送信者ID：${lineUserId}\nメッセージ：${text}`,
-  }).catch(() => {});
 
   // --- 固定テキスト ---
   switch (text) {
@@ -532,13 +528,17 @@ async function handleMessage(event) {
       }
   }
 
-  // --- 未判定メッセージ：担当者対応が必要なメッセージとして保存 ---
+  // --- 未判定メッセージ：担当者対応が必要 → グループ通知 + GAS保存 ---
   (async () => {
     let displayName = '顧客';
     try {
       const profile = await client.getProfile(lineUserId);
       displayName = profile.displayName;
     } catch (e) {}
+    const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+    notifyInternalGroup('new_message', {
+      message: `顧客名：${displayName}\nメッセージ：${text}\n🕐 ${now}\n👉 タスク管理アプリの「顧客対応」から返信してください`,
+    }).catch(() => {});
     fetch(TASK_GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

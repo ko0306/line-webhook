@@ -25,23 +25,6 @@ module.exports = async (req, res) => {
     // 顧客にLINEメッセージを送信
     await client.pushMessage(customerId, { type: 'text', text: message });
 
-    // 社内グループに通知
-    const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-    await fetch('https://api.line.me/v2/bot/message/push', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${INTERNAL_BOT_TOKEN}`,
-      },
-      body: JSON.stringify({
-        to: INTERNAL_GROUP_ID,
-        messages: [{
-          type: 'text',
-          text: `💬【担当者が返信しました】\n─────────────────\n担当：${replierName}\n顧客：${customerName || '不明'}\n返信内容：${message}\n🕐 ${now}`,
-        }],
-      }),
-    });
-
     // GASに返信済みを記録
     if (messageId) {
       await fetch(TASK_GAS_URL, {
