@@ -1,0 +1,115 @@
+<!DOCTYPE html><html lang="ja"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OZOSHIFT 機能・プラン一覧</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;background:#f0f4f8;color:#333;padding-bottom:48px}
+.hero{background:linear-gradient(135deg,#06C755 0%,#00a040 100%);color:#fff;text-align:center;padding:28px 16px 22px}
+.hero-title{font-size:24px;font-weight:bold;letter-spacing:.08em}
+.hero-sub{font-size:12px;opacity:.85;margin-top:4px}
+.hero-note{display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;font-size:11px;padding:4px 14px;margin-top:10px}
+.wrap{max-width:480px;margin:0 auto;padding:0 12px}
+h2{font-size:15px;font-weight:bold;margin:24px 0 12px;color:#444;display:flex;align-items:center;gap:6px}
+.feats{display:flex;flex-direction:column;gap:8px}
+.feat{display:flex;align-items:flex-start;gap:12px;background:#fff;border-radius:12px;padding:13px 14px;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.ficon{font-size:22px;flex-shrink:0;margin-top:1px}
+.ftitle{font-size:14px;font-weight:bold;margin-bottom:3px;color:#222}
+.fdesc{font-size:12px;color:#666;line-height:1.65}
+.plans{display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:14px;padding:20px 16px 16px;box-shadow:0 2px 10px rgba(0,0,0,.09);border:2.5px solid transparent;position:relative;overflow:hidden}
+.card.current{border-color:#06C755}
+.card.popular:not(.current){border-color:#ff9500}
+.badge{display:inline-block;font-size:11px;font-weight:bold;border-radius:20px;padding:3px 12px;margin-bottom:10px}
+.badge.pop{background:#ff9500;color:#fff}
+.badge.cur{background:#06C755;color:#fff}
+.pname{font-size:19px;font-weight:bold;color:#222;margin-bottom:2px}
+.psummary{font-size:12px;color:#888;margin-bottom:10px}
+.pprice{font-size:30px;font-weight:bold;color:#06C755;line-height:1}
+.pmo{font-size:13px;color:#888;font-weight:normal}
+.divider{height:1px;background:#f0f0f0;margin:14px 0}
+.prows{display:flex;flex-direction:column;gap:7px}
+.prow{display:flex;align-items:center;gap:8px;font-size:13px;color:#333}
+.prow.ng{color:#bbb}
+.chk{width:22px;text-align:center;flex-shrink:0}
+.note-box{background:#fff;border-radius:12px;padding:16px;text-align:center;font-size:12px;color:#666;line-height:1.85;margin-top:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.note-box strong{color:#06C755}
+.cta{display:block;background:#06C755;color:#fff;text-align:center;padding:15px;border-radius:13px;font-size:15px;font-weight:bold;text-decoration:none;margin-top:16px;box-shadow:0 4px 12px rgba(6,199,85,.35);letter-spacing:.04em}
+</style>
+</head><body>
+<div class="hero">
+  <div class="hero-title">⚡ OZOSHIFT</div>
+  <div class="hero-sub">OZONOIX シフト・勤怠管理アプリ</div>
+  <div class="hero-note">🎉 初月まるごと無料トライアル実施中</div>
+</div>
+<div class="wrap">
+  <h2>📋 全プラン共通の機能</h2>
+  <div class="feats">
+    <div class="feat"><span class="ficon">📅</span><div><div class="ftitle">シフト作成・管理</div><div class="fdesc">管理者がカレンダー形式でシフトを作成。スタッフはスマホでいつでも確認できます。</div></div></div>
+    <div class="feat"><span class="ficon">⏰</span><div><div class="ftitle">勤怠打刻</div><div class="fdesc">出勤・退勤・休憩を1タップで記録。時刻・GPS情報も自動保存されます。</div></div></div>
+    <div class="feat"><span class="ficon">📊</span><div><div class="ftitle">勤務時間の自動集計</div><div class="fdesc">月次・週次の労働時間・残業時間を自動計算。給与計算にそのまま活用できます。</div></div></div>
+    <div class="feat"><span class="ficon">📋</span><div><div class="ftitle">CSV出力</div><div class="fdesc">勤怠データをCSV形式でダウンロード。Excelや給与計算ソフトとの連携も簡単。</div></div></div>
+    <div class="feat"><span class="ficon">📱</span><div><div class="ftitle">スマホアプリとして使用</div><div class="fdesc">ホーム画面に追加するだけでアプリとして起動（PWA）。インストール不要・すぐ使えます。</div></div></div>
+    <div class="feat"><span class="ficon">🔔</span><div><div class="ftitle">プッシュ通知</div><div class="fdesc">シフト公開・変更をスタッフのスマホにリアルタイム通知。見落としゼロへ。</div></div></div>
+    <div class="feat"><span class="ficon">✏️</span><div><div class="ftitle">打刻修正申請</div><div class="fdesc">打刻ミスをスタッフがスマホから申請→管理者が承認。手書き修正が不要になります。</div></div></div>
+    <div class="feat"><span class="ficon">👥</span><div><div class="ftitle">スタッフ管理</div><div class="fdesc">スタッフの登録・削除・役職設定・パスワード変更がブラウザから簡単操作。</div></div></div>
+    <div class="feat"><span class="ficon">🚃</span><div><div class="ftitle">交通費記録</div><div class="fdesc">出勤ごとの交通費を記録し月次集計。交通費精算の手間を大幅に削減できます。</div></div></div>
+    <div class="feat"><span class="ficon">🔒</span><div><div class="ftitle">高いセキュリティ</div><div class="fdesc">お客様専用の独立したアプリを構築。他社データと混在せず安心してご利用いただけます。</div></div></div>
+  </div>
+
+  <h2>💎 プラン比較</h2>
+  <div class="plans">
+    <!-- ベーシック -->
+    <div class="card">
+      <div class="pname">ベーシックプラン</div>
+      <div class="psummary">小規模店舗向け</div>
+      <div class="pprice">¥1,980<span class="pmo">/月（税込）</span></div>
+      <div class="divider"></div>
+      <div class="prows">
+        <div class="prow"><span class="chk">✅</span><span>従業員数 〜19名</span></div>
+        <div class="prow"><span class="chk">✅</span><span>1店舗</span></div>
+        <div class="prow"><span class="chk">✅</span><span>プッシュ通知</span></div>
+        <div class="prow"><span class="chk">✅</span><span>公式LINE対応</span></div>
+        <div class="prow ng"><span class="chk">❌</span><span>多店舗管理</span></div>
+        <div class="prow ng"><span class="chk">❌</span><span>優先サポート</span></div>
+      </div>
+    </div>
+    <!-- スタンダード（人気） -->
+    <div class="card popular">
+      <div class="badge pop">人気 No.1</div>
+      <div class="pname">スタンダードプラン</div>
+      <div class="psummary">中規模・多店舗向け</div>
+      <div class="pprice">¥2,980<span class="pmo">/月（税込）</span></div>
+      <div class="divider"></div>
+      <div class="prows">
+        <div class="prow"><span class="chk">✅</span><span>従業員数 〜40名</span></div>
+        <div class="prow"><span class="chk">✅</span><span>店舗数 無制限</span></div>
+        <div class="prow"><span class="chk">✅</span><span>プッシュ通知</span></div>
+        <div class="prow"><span class="chk">✅</span><span>公式LINE対応</span></div>
+        <div class="prow ng"><span class="chk">❌</span><span>優先サポート</span></div>
+      </div>
+    </div>
+    <!-- プレミアム -->
+    <div class="card">
+      <div class="pname">プレミアムプラン</div>
+      <div class="psummary">大規模・優先対応</div>
+      <div class="pprice">¥3,980<span class="pmo">/月（税込）</span></div>
+      <div class="divider"></div>
+      <div class="prows">
+        <div class="prow"><span class="chk">✅</span><span>従業員数 無制限</span></div>
+        <div class="prow"><span class="chk">✅</span><span>店舗数 無制限</span></div>
+        <div class="prow"><span class="chk">✅</span><span>プッシュ通知</span></div>
+        <div class="prow"><span class="chk">✅</span><span>公式LINE対応</span></div>
+        <div class="prow"><span class="chk">✅</span><span>優先サポート</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    ✅ 初月は<strong>全プラン・全機能が無料</strong>でお試しいただけます<br>
+    ✅ <strong>独自カスタマイズ</strong>にも対応しています<br>
+    ご希望の機能があればお気軽にLINEでご相談ください😊
+  </div>
+  
+</div>
+</body></html>

@@ -26,63 +26,114 @@ const STRIPE_PAYMENT_URLS = {
 };
 
 // ==================== キーワードルール ====================
-// ※ 現在有効なルール一覧（下部に詳細リスト）
 const KEYWORD_RULES = [
   {
-    words: ['料金', '値段', 'いくら', '費用', '価格', '月額'],
+    words: ['料金', '値段', 'いくら', '費用', '価格', '月額', 'コスト', '金額'],
     reply: '料金についてのご質問ありがとうございます！\n\n【各サービスの料金】\n📱 シフト管理アプリ：¥1,980/月〜\n🌐 HP作成：¥50,000〜\n💻 アプリ制作：¥500,000〜\n\n詳しくはこちら👇\nhttps://ozononix.com/',
   },
   {
-    words: ['シフト', '勤怠', '出勤', '退勤', '打刻', 'シフト管理'],
-    reply: 'シフト管理アプリについてのご質問ですね！\n\nスタッフのシフト作成・勤怠管理・勤務時間集計がスマホで完結するアプリです。\n\n詳しくはこちら👇\nhttps://ozononix.com/shift-app/',
+    words: ['シフト', '勤怠', '出勤', '退勤', '打刻', 'シフト管理', 'シフト表', '出退勤'],
+    reply: 'シフト管理アプリについてのご質問ですね！\n\nスタッフのシフト作成・勤怠管理・勤務時間集計がスマホで完結するアプリです。\n\n詳しくはこちら👇\nhttps://ozononix.com/product2/',
   },
   {
-    words: ['ホームページ', 'hp', 'ウェブサイト', 'サイト', 'web', 'ウェブ'],
+    words: ['ホームページ', 'hp', 'ウェブサイト', 'サイト', 'web', 'ウェブ', 'website', 'ホムペ'],
     reply: 'HP作成についてのご質問ですね！\n\n丁寧なカウンセリングと自由度の高いカスタマイズが特徴です。\n料金：¥50,000〜\n\n詳しくはこちら👇\nhttps://ozononix.com/product1/',
   },
   {
-    words: ['アプリ', 'アプリ制作', '業務効率', 'システム開発'],
+    words: ['アプリ制作', '業務効率化', 'システム開発', 'システム構築', '業務改善ツール'],
     reply: '業務効率化アプリ制作についてのご質問ですね！\n\nお客様の業務に合わせたアプリを一から制作します。\n料金：¥500,000〜\n\n詳しくはこちら👇\nhttps://ozononix.com/product3/',
   },
   {
-    words: ['無料', 'トライアル', '試し', 'お試し', '無料体験'],
-    reply: '無料トライアルについてのご質問ありがとうございます！\n\nシフト管理アプリは初月1ヶ月間・全機能が無料でご利用いただけます😊\nまずはお気軽にお問い合わせください！\n\nhttps://ozononix.com/shift-app/',
+    words: ['無料', 'トライアル', '試し', 'お試し', '無料体験', '無料期間', 'フリー'],
+    reply: '無料トライアルについてのご質問ありがとうございます！\n\nシフト管理アプリは初月1ヶ月間・全機能が無料でご利用いただけます😊\nまずはお気軽にお問い合わせください！\n\nhttps://ozononix.com/product2/',
   },
   {
-    words: ['支払い', '請求', 'クレジット', 'カード', '振込', '領収書', '請求書'],
+    words: ['支払い', '請求', 'クレジット', 'カード', '振込', '領収書', '請求書', '支払方法', 'お支払'],
     reply: 'お支払いについてのご質問ありがとうございます！\n\nクレジットカードにてご契約専用サイトよりお支払いいただきます。\nご契約時に専用サイトのURLをご案内いたします。\n\nご不明な点はお気軽にお問い合わせください😊',
   },
   {
-    words: ['解約', '退会', 'やめ', 'キャンセル'],
+    words: ['解約', '退会', 'やめたい', 'キャンセル', '停止', '解除', '辞める'],
     reply: '解約・退会のご希望ありがとうございます。\n\n下のメニューの「規約・プランを確認」を開き、「退会はこちら」よりこの公式LINEでお手続きいただけます😊\n\nご不明な点があればお気軽にご連絡ください。',
   },
   {
-    words: ['セキュリティ', '安全', '個人情報', 'プライバシー', '漏洩', '不正'],
-    reply: 'セキュリティについてのご質問ありがとうございます！\n\nお客様ごとに専用のアプリを作成するため、部外者が干渉することはできない仕組みになっています🔒\n\n安心してご利用ください😊',
+    words: ['セキュリティ', '安全', '個人情報', 'プライバシー', '漏洩', '不正', '安心', '守られ'],
+    reply: 'セキュリティについてのご質問ありがとうございます！\n\nお客様ごとに専用のアプリを作成するため、部外者が干渉することはできない仕組みになっています🔒\nデータは世界水準のDBで暗号化して安全に管理しています。\n\n安心してご利用ください😊',
   },
   {
-    words: ['営業時間', '対応時間', '何時', '休日', '土日'],
-    reply: '対応時間のご質問ありがとうございます！\n\n💬 対応時間：平日 10:00〜18:00\n\nお気軽にメッセージをお送りください！',
+    words: ['営業時間', '対応時間', '何時', '休日', '土日', '営業日', '時間帯', '開いてる'],
+    reply: '対応時間のご質問ありがとうございます！\n\n💬 対応時間：平日 10:00〜18:00\n\n時間外のお問い合わせは翌営業日に対応いたします。\nお気軽にメッセージをお送りください！',
   },
   {
-    words: ['カスタマイズ', 'オリジナル', '独自機能'],
-    reply: 'カスタマイズについてのご質問ありがとうございます！\n\n各サービスとも独自カスタマイズに対応しています。\nご希望の内容をお知らせいただければ、対応可否をご確認いたします😊',
+    words: ['カスタマイズ', 'オリジナル', '独自機能', 'オーダーメイド', 'カスタム', 'アレンジ'],
+    reply: 'カスタマイズについてのご質問ありがとうございます！\n\n各サービスとも独自カスタマイズに対応しています。\nご希望の内容をお知らせいただければ、対応可否をご確認いたします😊\n\nお問い合わせはこちら👇\nhttps://ozononix.com/contact',
   },
   {
-    words: ['こんにちは', 'こんばんは', 'おはよう', 'はじめまして', 'よろしく'],
+    words: ['こんにちは', 'こんばんは', 'おはよう', 'はじめまして', 'よろしく', 'hello', 'hi'],
     reply: 'こんにちは！OZONONIXでございます😊\n\nビジネスに役立つサービスをご提供しております。\nご質問はお気軽にどうぞ！',
   },
   {
-    words: ['ありがとう', '感謝', 'ありがとございます'],
+    words: ['ありがとう', '感謝', 'ありがとございます', 'ありがとうございます', 'サンキュー', 'thanks'],
     reply: 'こちらこそありがとうございます😊\nまたいつでもお気軽にご連絡ください！',
   },
   {
-    words: ['契約', '申し込み', '申込', '始めたい', 'はじめたい', '使いたい'],
-    reply: 'ご契約・お申し込みはリッチメニューの「お問い合わせ」ボタンよりお願いいたします😊\n\nご不明な点はそのままメッセージをお送りください。担当者が対応いたします。',
+    words: ['契約', '申し込み', '申込', '始めたい', 'はじめたい', '使いたい', '導入したい', '登録したい'],
+    reply: 'ご契約・お申し込みはリッチメニューの「お問い合わせ」ボタンよりお願いいたします😊\n\nまたはこちらのフォームよりお申し込みください👇\nhttps://ozononix.com/contact',
   },
   {
-    words: ['問い合わせ', 'お問合せ', '質問', '相談'],
-    reply: 'お問い合わせ・ご相談はリッチメニューの「お問い合わせ」ボタン、またはそのままメッセージをお送りください😊\n担当者が対応いたします。',
+    words: ['問い合わせ', 'お問合せ', '質問', '相談', '聞きたい', '教えて'],
+    reply: 'お問い合わせ・ご相談はリッチメニューの「お問い合わせ」ボタン、またはそのままメッセージをお送りください😊\n担当者または自動で返答いたします。',
+  },
+  {
+    words: ['スマホ', 'スマートフォン', 'モバイル', 'iphone', 'android', 'スマートフォン対応', 'スマホ対応'],
+    reply: 'スマートフォン対応についてのご質問ありがとうございます！\n\n📱 シフト管理アプリ：ホーム画面にインストールしてアプリとして使えます（PWA対応）\n🌐 HP作成：全てのHPをスマートフォン対応（レスポンシブ）で制作しています\n💻 アプリ制作：iOS・Android両方に対応可能です\n\n詳しくはお気軽にお問い合わせください😊',
+  },
+  {
+    words: ['機能', 'できること', '使い方', '何ができる', '何がある', '搭載'],
+    reply: '【シフト管理アプリ 主な機能】\n\n✅ シフト提出・作成・承認\n✅ 勤怠打刻（出勤・退勤・休憩）\n✅ 勤務時間集計\n✅ CSV出力\n✅ プッシュ通知\n✅ 修正申請機能\n✅ 完全カスタマイズ対応\n\n他のサービスの機能もお気軽にお問い合わせください😊',
+  },
+  {
+    words: ['人数', 'スタッフ数', '従業員数', '何名', '何人', '上限', '制限', '人数制限'],
+    reply: '利用人数についてのご質問ありがとうございます！\n\n【シフトアプリ プラン別スタッフ数】\n・ベーシック：〜19名（1店舗）\n・スタンダード：〜40名（店舗無制限）\n・プレミアム：無制限（店舗無制限）\n\nスタッフ数が増えてもプラン変更で対応できます😊',
+  },
+  {
+    words: ['店舗', '複数店', 'チェーン', '多店舗', '支店', '何店舗'],
+    reply: '複数店舗への対応についてのご質問ありがとうございます！\n\n【シフトアプリ 店舗数】\n・ベーシック：1店舗\n・スタンダード：店舗数無制限（〜40名）\n・プレミアム：店舗数無制限（無制限）\n\n複数店舗でのご利用もスタンダード以上で対応しています😊',
+  },
+  {
+    words: ['通知', 'プッシュ通知', 'お知らせ', 'アラート', '通知機能', 'push'],
+    reply: 'プッシュ通知についてのご質問ありがとうございます！\n\n📲 シフト管理アプリはプッシュ通知に対応しています。\nシフト確定・変更・申請などをスマホへリアルタイムでお知らせします😊\n\nカスタマイズで通知内容の調整も可能です。',
+  },
+  {
+    words: ['csv', 'エクスポート', '出力', '集計', 'データ出力', '帳票', 'ダウンロード'],
+    reply: 'データ出力についてのご質問ありがとうございます！\n\n📊 シフト管理アプリはCSV出力に対応しています。\n勤務時間の集計データをエクスポートして、給与計算や管理業務にご活用いただけます😊',
+  },
+  {
+    words: ['修正申請', '打刻修正', '変更申請', '打刻ミス', '訂正', '申請機能'],
+    reply: '修正申請についてのご質問ありがとうございます！\n\n✏️ シフト管理アプリには修正申請機能が搭載されています。\nスタッフが打刻ミスや変更をアプリ上で申請し、管理者が承認する仕組みです😊\n\nカスタマイズで申請フローも調整可能です。',
+  },
+  {
+    words: ['導入', '始め方', 'はじめ方', 'セットアップ', '手順', 'スタート', '使い始め'],
+    reply: '導入についてのご質問ありがとうございます！\n\n【オゾシフ 導入の流れ】\n1️⃣ お問い合わせ・お申し込み\n2️⃣ 担当者よりヒアリング\n3️⃣ お客様専用アプリを制作\n4️⃣ ご利用開始\n\n初月は全機能無料でお試しいただけます😊\nhttps://ozononix.com/product2/',
+  },
+  {
+    words: ['サポート', '困った', 'エラー', '不具合', 'バグ', 'おかしい', '動かない', '問題'],
+    reply: 'サポートについてのご質問ありがとうございます！\n\n💬 サポート対応時間：平日 10:00〜18:00\n\nご不明な点やお困りのことがあればお気軽にメッセージをお送りください。\n担当者または自動で返答いたします😊',
+  },
+  {
+    words: ['比較', '他社', '競合', '違い', 'どう違う', 'おすすめ', '選び方'],
+    reply: 'サービスの違いについてのご質問ありがとうございます！\n\n【OZONONIXの強み】\n✅ お客様専用に制作するため高セキュリティ\n✅ 完全カスタマイズ対応\n✅ 他社と比べてリーズナブルな料金\n✅ 担当者による丁寧なサポート\n\n詳しくはこちら👇\nhttps://ozononix.com/',
+  },
+  {
+    words: ['期間', 'いつから', '納期', '完成', 'どのくらい', 'かかる', '日数', '何ヶ月'],
+    reply: '制作期間についてのご質問ありがとうございます！\n\n・シフトアプリ：ヒアリング後約2〜4週間\n・HP作成：1〜3ヶ月（要件によって異なります）\n・アプリ制作：要件確認後にお伝えします\n\nまずはお気軽にご相談ください😊',
+  },
+  {
+    words: ['会社', 'ozononix', 'オゾノニクス', '運営', 'どんな会社', '自己紹介', '概要'],
+    reply: 'OZONONIXについてのご質問ありがとうございます！\n\n🏢 OZONONIX（オゾノニクス）は、\nシフト管理アプリ・ホームページ制作・業務効率化アプリ制作を提供する会社です。\n\n詳しくはこちら👇\nhttps://ozononix.com/',
+  },
+  {
+    words: ['データ', 'バックアップ', '消える', '保存', 'クラウド', '保管', '紛失'],
+    reply: 'データ管理についてのご質問ありがとうございます！\n\n💾 データは世界水準のクラウドDBで暗号化して安全に管理しています。\n自動バックアップにも対応しており、大切なデータを安心してお預けいただけます🔒',
   },
 ];
 
@@ -473,6 +524,18 @@ async function handleMessage(event) {
       return handlePlanChangeStart(event, lineUserId);
     case '退会手続き':
       return handleWithdrawStart(event, lineUserId);
+    case '返答_OK':
+      await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+      return replyText(event.replyToken, 'お役に立てて良かったです😊\nまたいつでもお気軽にお声がけください！');
+    case '返答_担当者':
+      await Promise.all([
+        gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+        sendEmail(lineUserId, '自動返答後に「担当者に相談」が選択されました。LINEアプリから対応をお願いします。'),
+        notifyInternalGroup('inquiry_keyword', {
+          message: 'キーワード自動返答後に「担当者に相談」が選択されました。公式LINEアプリから対応してください。',
+        }),
+      ]);
+      return replyText(event.replyToken, '担当者にお繋ぎいたします。しばらくお待ちください🙏\n\n💬 対応時間：平日 10:00〜18:00\nお時間をいただく場合がございますが、担当者または自動で返答いたします。');
   }
 
   // --- FAQ カテゴリ選択 ---
@@ -485,21 +548,18 @@ async function handleMessage(event) {
     return handleInquiryService(event, text.replace('問い合わせ_', ''), lineUserId);
   }
 
-  // --- メールアドレス入力（GAS呼び出し前にチェック）---
-  if (text.includes('@') && text.includes('.')) {
-    return handleEmailInput(event, text, lineUserId);
-  }
-
-  // --- キーワードマッチング（GAS呼び出し前にチェック）---
-  const match = findKeyword(text);
-  if (match) {
-    return replyText(event.replyToken, match.reply);
-  }
-
-  // --- 会話状態（上記に該当しない場合のみGAS呼び出し）---
+  // --- 会話状態を先に確認（INQUIRY_EMAIL等のバグ修正のため順序変更）---
   const { state, stateData } = await gasPost('getConversationState', { lineUserId });
 
   switch (state) {
+    case 'WAITING_EMAIL':
+      return handleEmailInput(event, text, lineUserId);
+    case 'INQUIRY_EMAIL':
+      return handleInquiryEmail(event, text, lineUserId, stateData);
+    case 'INQUIRY_NAME':
+      return handleInquiryName(event, text, lineUserId, stateData);
+    case 'INQUIRY_DETAILS':
+      return handleInquiryDetails(event, text, lineUserId, stateData);
     case 'WAITING_CUSTOMIZATION':
       return handleCustomizationReply(event, text, lineUserId, stateData);
     case 'WAITING_CUSTOMIZATION_DETAILS':
@@ -512,49 +572,29 @@ async function handleMessage(event) {
       return handleInfoFieldSelect(event, text, lineUserId);
     case 'WAITING_WITHDRAW_CONFIRM':
       return handleWithdrawConfirm(event, text, lineUserId);
-    case 'INQUIRY_DETAILS':
-      return handleInquiryDetails(event, text, lineUserId, stateData);
-    case 'INQUIRY_EMAIL':
-      return handleInquiryEmail(event, text, lineUserId, stateData);
-    case 'INQUIRY_NAME':
-      return handleInquiryName(event, text, lineUserId, stateData);
-    case 'WAITING_EMAIL':
-      return handleEmailInput(event, text, lineUserId);
     case 'FREE_CONSULT_KEYWORD':
       return handleFreeConsultKeyword(event, text, lineUserId);
+    case 'KEYWORD_REPLIED':
+      return handleKeywordRetry(event, text, lineUserId, stateData);
     default:
       if (state && state.startsWith('WAITING_INFO_CHANGE_VALUE:')) {
         return handleInfoChangeValue(event, text, lineUserId, state.split(':')[1]);
       }
   }
 
-  // --- 未判定メッセージ：担当者対応が必要 → グループ通知 + GAS保存 ---
-  (async () => {
-    let displayName = '顧客';
-    try {
-      const profile = await client.getProfile(lineUserId);
-      displayName = profile.displayName;
-    } catch (e) {}
-    const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-    notifyInternalGroup('new_message', {
-      message: `顧客名：${displayName}\nメッセージ：${text}\n🕐 ${now}\n👉 タスク管理アプリの「顧客対応」から返信してください`,
-    }).catch(() => {});
-    fetch(TASK_GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _source: 'liff', action: 'saveCustomerMessage', lineUserId, displayName, message: text }),
-    }).catch(() => {});
-  })();
+  // --- メールアドレス入力（状態なし時のみ）---
+  if (text.includes('@') && text.includes('.')) {
+    return handleEmailInput(event, text, lineUserId);
+  }
 
-  await client.replyMessage(event.replyToken, {
-    type: 'text',
-    text: 'メッセージありがとうございます😊\n\n以下よりご用件をお選びください。\n\n📋 よくあるQ&A：料金・解約・セキュリティなどのよくある質問\n💬 お問い合わせ：ご質問・ご相談または契約のお申し込み\n📄 規約・プラン：ご契約内容の確認・変更・退会',
-    quickReply: makeQuickReply([
-      ['よくあるQ&A', 'よくあるQ&A'],
-      ['お問い合わせ', 'お問い合わせ開始'],
-      ['規約・プランを確認', '規約・プランを確認'],
-    ]),
-  });
+  // --- キーワードマッチング → 満足度QR付き返答 ---
+  const match = findKeyword(text);
+  if (match) {
+    return replyWithSatisfaction(event, match, lineUserId);
+  }
+
+  // --- 未判定メッセージ ---
+  return handleUnknownFallback(event, text, lineUserId);
 }
 
 // ==================== よくあるQ&A ====================
@@ -948,6 +988,9 @@ async function handleCustomizationReply(event, text, lineUserId, stateData) {
       gasPost('updateUserStatus', { lineUserId, status: '支払い待ち' }),
       gasPost('updateLastAction', { lineUserId, action_label: `カスタマイズ不要・支払い待ち（${plan}）` }),
       sendEmail(lineUserId, `シフトアプリ契約者がカスタマイズ不要と回答しました。専用アプリの制作を開始してください。プラン：${plan}`),
+      notifyInternalGroup('customization', {
+        message: `シフトアプリ契約者がカスタマイズ不要と回答しました。\nプラン：${plan}\nアプリ制作を開始してください。`,
+      }),
     ]);
     return;
   }
@@ -969,6 +1012,9 @@ async function handleCustomizationDetails(event, lineUserId, stateData) {
     gasPost('updateUserStatus', { lineUserId, status: '支払い待ち' }),
     gasPost('updateLastAction', { lineUserId, action_label: `カスタマイズ要望送信・支払い待ち（${plan}）` }),
     sendEmail(lineUserId, `シフトアプリ契約者からカスタマイズ要望が届きました。内容：${customText}\nプラン：${plan}`),
+    notifyInternalGroup('customization', {
+      message: `シフトアプリ契約者からカスタマイズ要望が届きました。\nプラン：${plan}\n内容：${customText}`,
+    }),
   ]);
   const messages = [
     { type: 'text', text: 'ご要望を承りました。ありがとうございます😊\n担当者にお繋ぎいたします。しばらくお待ちください。' },
@@ -1170,6 +1216,105 @@ function findKeyword(text) {
   ) || null;
 }
 
+// キーワード回答後に満足度QRを表示
+async function replyWithSatisfaction(event, match, lineUserId) {
+  const originalText = event.message.text;
+  await Promise.all([
+    gasPost('setConversationState', {
+      lineUserId,
+      state: 'KEYWORD_REPLIED',
+      stateData: { lastQuery: originalText, lastMatchWord: match.words[0] },
+    }),
+    client.replyMessage(event.replyToken, [
+      { type: 'text', text: match.reply },
+      {
+        type: 'text',
+        text: 'この回答はお役に立てましたか？',
+        quickReply: makeQuickReply([
+          ['✅ 解決しました', '返答_OK'],
+          ['👤 担当者に相談', '返答_担当者'],
+          ['🔄 別の方法で探す', '返答_再試行'],
+        ]),
+      },
+    ]),
+  ]);
+}
+
+// キーワード再試行（同じ回答にならないよう別のソースから検索）
+async function handleKeywordRetry(event, text, lineUserId, stateData) {
+  // 別のメッセージが来た場合（再試行ボタン以外）は新規扱い
+  if (text !== '返答_再試行') {
+    await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+    const newMatch = findKeyword(text);
+    if (newMatch) return replyWithSatisfaction(event, newMatch, lineUserId);
+    // キーワードにも合致しなければ担当者フロー
+    return handleUnknownFallback(event, text, lineUserId);
+  }
+
+  const lastQuery  = stateData?.lastQuery     || '';
+  const lastWord   = stateData?.lastMatchWord || '';
+
+  // FAQから検索（キーワードルールとは別ソース）
+  const faqMatch = findFaq(lastQuery);
+  if (faqMatch) {
+    await gasPost('setConversationState', { lineUserId, state: '', stateData: {} });
+    return client.replyMessage(event.replyToken, [
+      { type: 'text', text: `【別の回答】\n\n${faqMatch.q}\n\n${faqMatch.a}` },
+      {
+        type: 'text',
+        text: 'こちらはいかがでしょうか？',
+        quickReply: makeQuickReply([
+          ['✅ 解決しました', '返答_OK'],
+          ['👤 担当者に相談', '返答_担当者'],
+        ]),
+      },
+    ]);
+  }
+
+  // それでも見つからない場合は担当者へ
+  await Promise.all([
+    gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+    sendEmail(lineUserId, `自動返答の再試行で追加回答が見つかりませんでした。\n元の質問: ${lastQuery}`),
+    notifyInternalGroup('inquiry_keyword', {
+      message: `「${lastQuery}」について自動返答後に再試行されましたが追加回答がありません。担当者の対応をお願いします。`,
+    }),
+  ]);
+  return client.replyMessage(event.replyToken, [
+    { type: 'text', text: 'ご不便をおかけして申し訳ございません🙏\n他にご案内できる情報が見つかりませんでした。\n\n担当者より詳しくご案内いたします。\n担当者または自動で返答いたします。' },
+    { type: 'text', text: '💬 対応時間：平日 10:00〜18:00' },
+  ]);
+}
+
+// 未判定メッセージの共通処理（handleMessage・handleKeywordRetry から呼ぶ）
+async function handleUnknownFallback(event, text, lineUserId) {
+  (async () => {
+    let displayName = '顧客';
+    try {
+      const profile = await client.getProfile(lineUserId);
+      displayName = profile.displayName;
+    } catch (e) {}
+    const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+    notifyInternalGroup('new_message', {
+      message: `顧客名：${displayName}\nメッセージ：${text}\n🕐 ${now}\n👉 タスク管理アプリの「顧客対応」から返信してください`,
+    }).catch(() => {});
+    fetch(TASK_GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _source: 'liff', action: 'saveCustomerMessage', lineUserId, displayName, message: text }),
+    }).catch(() => {});
+  })();
+
+  return client.replyMessage(event.replyToken, {
+    type: 'text',
+    text: 'メッセージありがとうございます😊\n\n以下よりご用件をお選びください。\n\n📋 よくあるQ&A：料金・解約・セキュリティなどのよくある質問\n💬 お問い合わせ：ご質問・ご相談または契約のお申し込み\n📄 規約・プラン：ご契約内容の確認・変更・退会',
+    quickReply: makeQuickReply([
+      ['よくあるQ&A', 'よくあるQ&A'],
+      ['お問い合わせ', 'お問い合わせ開始'],
+      ['規約・プランを確認', '規約・プランを確認'],
+    ]),
+  });
+}
+
 // ==================== ユーティリティ ====================
 function makeQuickReply(items) {
   return {
@@ -1228,6 +1373,8 @@ async function notifyInternalGroup(type, payload) {
     msg = `💬【公式LINE 新着メッセージ】\n─────────────────\n${payload.message || ''}\n🕐 ${now}\n👉 公式LINEアプリから返信してください`;
   } else if (type === 'new_follow') {
     msg = `👤【公式LINE 新規友達追加】\n─────────────────\n${payload.message || '新しいユーザーが友達追加しました'}\n🕐 ${now}`;
+  } else if (type === 'customization') {
+    msg = `🔧【公式LINE カスタマイズ依頼】\n─────────────────\n${payload.message || ''}\n🕐 受付：${now}\n👉 担当者が対応してください`;
   }
   if (!msg) return { ok: false, error: 'UNKNOWN_TYPE' };
   try {
