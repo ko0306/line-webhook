@@ -10,6 +10,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxe7SadlFI_VpVhK6pAAbm1
 
 const INTERNAL_BOT_TOKEN = process.env.INTERNAL_BOT_TOKEN || '';
 const INTERNAL_GROUP_ID  = 'C4bfc1aee984b5f5e350dc8423885ce96';
+const TASK_GAS_URL = 'https://script.google.com/macros/s/AKfycbwA1jwXjqv2iyXO9UUbNADY09yMQPhOZzZJhs-zrmGwixUtvwK_ghXh85SxuyUI4A/exec';
 
 const PLAN_INFO = {
   'ベーシック':   { price: 1980 },
@@ -531,7 +532,20 @@ async function handleMessage(event) {
       }
   }
 
-  // --- 未判定メッセージ ---
+  // --- 未判定メッセージ：担当者対応が必要なメッセージとして保存 ---
+  (async () => {
+    let displayName = '顧客';
+    try {
+      const profile = await client.getProfile(lineUserId);
+      displayName = profile.displayName;
+    } catch (e) {}
+    fetch(TASK_GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _source: 'liff', action: 'saveCustomerMessage', lineUserId, displayName, message: text }),
+    }).catch(() => {});
+  })();
+
   await client.replyMessage(event.replyToken, {
     type: 'text',
     text: 'メッセージありがとうございます😊\n\n以下よりご用件をお選びください。\n\n📋 よくあるQ&A：料金・解約・セキュリティなどのよくある質問\n💬 お問い合わせ：ご質問・ご相談または契約のお申し込み\n📄 規約・プラン：ご契約内容の確認・変更・退会',
