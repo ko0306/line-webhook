@@ -576,6 +576,12 @@ async function handleMessage(event) {
       return handleFreeConsultKeyword(event, text, lineUserId);
     case 'KEYWORD_REPLIED':
       return handleKeywordRetry(event, text, lineUserId, stateData);
+    case 'WAITING_HP_DETAILS':
+    case 'WAITING_APP_DETAILS':
+      return handleHpAppDetailsInput(event, text, lineUserId, { ...stateData, state });
+    case 'HP_DETAILS_CONFIRM':
+    case 'APP_DETAILS_CONFIRM':
+      return handleHpAppConfirm(event, text, lineUserId, stateData);
     default:
       if (state && state.startsWith('WAITING_INFO_CHANGE_VALUE:')) {
         return handleInfoChangeValue(event, text, lineUserId, state.split(':')[1]);
@@ -959,13 +965,49 @@ async function handleEmailInput(event, email, lineUserId) {
       },
     ]);
   } else {
-    await Promise.all([
-      client.replyMessage(event.replyToken, [
+    // HP作成 / アプリ制作 フロー
+    const serviceName = (inquiry && inquiry.trim()) || (result.service === 'web' ? 'HP作成' : 'アプリ制作');
+    const isHP = serviceName.includes('HP') || result.service === 'web';
+    const stateKey = isHP ? 'HP' : 'APP';
+    const details = result.details || '';
+
+    if (details) {
+      // 詳細あり → 表示して確認
+      await gasPost('setConversationState', {
+        lineUserId,
+        state: `${stateKey}_DETAILS_CONFIRM`,
+        stateData: { service: serviceName, details },
+      });
+      await client.replyMessage(event.replyToken, [
         { type: 'text', text: 'ありがとうございます！確認が完了しました😊' },
-        { type: 'text', text: 'お問い合わせ内容をご確認の上、担当者よりカウンセリングのご連絡をいたします。\nしばらくお待ちください。' },
-      ]),
-      sendEmail(lineUserId, 'メール認証完了（HP/アプリ制作）。担当者からのカウンセリング対応をお願いします。'),
-    ]);
+        {
+          type: 'text',
+          text: `【お問い合わせ内容】\n📦 サービス：${serviceName}\n\n📝 ご相談内容：\n${details}`,
+        },
+        {
+          type: 'text',
+          text: 'こちらの内容でお間違いないですか？',
+          quickReply: makeQuickReply([
+            ['はい、この内容で', '詳細確認_はい'],
+            ['修正・追加あり', '詳細確認_修正'],
+          ]),
+        },
+      ]);
+    } else {
+      // 詳細なし → 入力を求める
+      await gasPost('setConversationState', {
+        lineUserId,
+        state: `WAITING_${stateKey}_DETAILS`,
+        stateData: { service: serviceName },
+      });
+      const hint = isHP
+        ? '（例：どのようなHPを作りたいか・参考サイト・ご予算・ページ数など）'
+        : '（例：作りたいアプリの概要・必要な機能・ご予算・利用シーンなど）';
+      await client.replyMessage(event.replyToken, [
+        { type: 'text', text: 'ありがとうございます！確認が完了しました😊' },
+        { type: 'text', text: `${serviceName}についての詳細をお聞かせください😊\n\n${hint}` },
+      ]);
+    }
   }
 }
 
@@ -1023,6 +1065,73 @@ async function handleCustomizationDetails(event, lineUserId, stateData) {
     messages.push({ type: 'text', text: `ご利用開始に向けてお支払いのご準備をお願いいたします👇\n${paymentUrl}` });
   }
   await client.replyMessage(event.replyToken, messages);
+}
+
+// ==================== HP/アプリ制作 詳細入力フロー ====================
+async function handleHpAppDetailsInput(event, text, lineUserId, stateData) {
+  const service  = stateData.service || '';
+  const isHP     = stateData.state === 'WAITING_HP_DETAILS';
+  const nextState = isHP ? 'HP_DETAILS_CONFIRM' : 'APP_DETAILS_CONFIRM';
+
+  await gasPost('setConversationState', {
+    lineUserId,
+    state: nextState,
+    stateData: { service, details: text },
+  });
+  await client.replyMessage(event.replyToken, [
+    {
+      type: 'text',
+      text: `【入力いただいた内容】\n📦 サービス：${service}\n\n📝 ご相談内容：\n${text}`,
+    },
+    {
+      type: 'text',
+      text: '以上の内容でよろしいですか？',
+      quickReply: makeQuickReply([
+        ['はい、以上です', '詳細確認_はい'],
+        ['修正・追加あり', '詳細確認_修正'],
+      ]),
+    },
+  ]);
+}
+
+async function handleHpAppConfirm(event, text, lineUserId, stateData) {
+  const service = stateData.service || '';
+  const details = stateData.details || '';
+  const isHP    = service.includes('HP');
+
+  if (text === '詳細確認_修正') {
+    // 修正・追加あり → 再入力
+    const nextWaitState = isHP ? 'WAITING_HP_DETAILS' : 'WAITING_APP_DETAILS';
+    await gasPost('setConversationState', {
+      lineUserId,
+      state: nextWaitState,
+      stateData: { service },
+    });
+    const hint = isHP
+      ? '（例：ご希望のデザイン・追加したい機能・ページ数・ご予算など）'
+      : '（例：必要な機能・連携システム・ご予算・スケジュールなど）';
+    return replyText(event.replyToken, `修正・追加内容をお送りください😊\n\n${hint}`);
+  }
+
+  if (text === '詳細確認_はい') {
+    const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+    await Promise.all([
+      gasPost('setConversationState', { lineUserId, state: '', stateData: {} }),
+      gasPost('updateUserStatus', { lineUserId, status: '商談中' }),
+      gasPost('updateLastAction', { lineUserId, action_label: `${service} ご相談内容確定` }),
+      sendEmail(lineUserId, `${service}のご相談内容が確定しました。\n内容：${details}\n\n担当者よりカウンセリングのご連絡をお願いします。`),
+      notifyInternalGroup('service_inquiry', {
+        service,
+        details,
+        lineUserId,
+        time: now,
+      }),
+    ]);
+    return client.replyMessage(event.replyToken, [
+      { type: 'text', text: 'ありがとうございます！内容を承りました😊' },
+      { type: 'text', text: '担当者より改めてご連絡いたします。\nしばらくお待ちください🙏\n\n💬 対応時間：平日 10:00〜18:00' },
+    ]);
+  }
 }
 
 // ==================== 規約・プラン ====================
@@ -1375,6 +1484,8 @@ async function notifyInternalGroup(type, payload) {
     msg = `👤【公式LINE 新規友達追加】\n─────────────────\n${payload.message || '新しいユーザーが友達追加しました'}\n🕐 ${now}`;
   } else if (type === 'customization') {
     msg = `🔧【公式LINE カスタマイズ依頼】\n─────────────────\n${payload.message || ''}\n🕐 受付：${now}\n👉 担当者が対応してください`;
+  } else if (type === 'service_inquiry') {
+    msg = `📋【公式LINE ご相談確定】\n─────────────────\n📦 サービス：${payload.service || '未入力'}\n📝 内容：${payload.details || '未入力'}\n🕐 受付：${now}\n👉 公式LINEアプリから担当者が返信してください`;
   }
   if (!msg) return { ok: false, error: 'UNKNOWN_TYPE' };
   try {

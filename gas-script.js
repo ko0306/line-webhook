@@ -8,6 +8,7 @@ const SS_ID = '1lDygFxhG1DdrWA-LKsAqUYVLOQfSc83KOf6Nr7hySs8';
 
 const COL = {
   EMAIL:            4,
+  DETAILS:          5,  // ★ お問い合わせフォームの「ご相談内容/詳細」列。実際のシートに合わせて変更してください
   SERVICE:          6,
   PLAN:             7,
   TRIAL:            8,
@@ -45,7 +46,8 @@ function doPost(e) {
       case 'saveCustomization':     return saveCustomization(data);
       case 'sendNotificationEmail': return sendNotificationEmail(data);
       case 'updateLastAction':      return updateLastAction(data);
-      case 'updateUserStatus':     return updateUserStatus(data);
+      case 'updateUserStatus':      return updateUserStatus(data);
+      case 'appendService':         return appendService(data);
       default:
         return jsonResponse({ success: false, error: 'Unknown action' });
     }
@@ -113,10 +115,11 @@ function linkUser(data) {
       const inquiry    = getLatestCellValue(sheet.getRange(row, COL.SERVICE));
       const plan       = getLatestCellValue(sheet.getRange(row, COL.PLAN));
       const trial      = getLatestCellValue(sheet.getRange(row, COL.TRIAL));
+      const details    = getLatestCellValue(sheet.getRange(row, COL.DETAILS));
       const withdrawn  = sheet.getRange(row, COL.WITHDRAWN).getValue();
       const statusRaw  = sheet.getRange(row, COL.USER_STATUS).getValue() || '';
       const userStatus = statusRaw.split('  [')[0].trim();
-      return jsonResponse({ success: true, service, inquiry, plan, trial, withdrawn: !!withdrawn, userStatus });
+      return jsonResponse({ success: true, service, inquiry, plan, trial, details, withdrawn: !!withdrawn, userStatus });
     }
   }
   return jsonResponse({ success: false, service });
@@ -136,6 +139,7 @@ function getUserInfo(data) {
   const plan     = getLatestCellValue(sheet.getRange(row, COL.PLAN));
   const trial    = getLatestCellValue(sheet.getRange(row, COL.TRIAL));
   const budget   = getLatestCellValue(sheet.getRange(row, COL.BUDGET));
+  const details  = getLatestCellValue(sheet.getRange(row, COL.DETAILS));
   const withdrawn = sheet.getRange(row, COL.WITHDRAWN).getValue();
   const lastPlanChange = sheet.getRange(row, COL.LAST_PLAN_CHANGE).getValue();
   const lastActionRaw = sheet.getRange(row, COL.LAST_ACTION).getValue() || '';
@@ -145,7 +149,7 @@ function getUserInfo(data) {
   const userStatus = userStatusRaw.split('  [')[0].trim();
 
   return jsonResponse({
-    success: true, email, inquiry, plan, trial, budget,
+    success: true, email, inquiry, plan, trial, budget, details,
     withdrawn: !!withdrawn,
     lastAction,
     userStatus,
@@ -289,6 +293,24 @@ function sendNotificationEmail(data) {
     } catch (_) {}
     return jsonResponse({ success: false, error: err.message });
   }
+}
+
+// ================================================================
+// appendService（追加契約サービスをUSER_STATUSに追記）
+// ================================================================
+function appendService(data) {
+  const row = findUserRow(data.lineUserId);
+  if (!row) return jsonResponse({ success: false, error: 'user not found' });
+  const ss = SpreadsheetApp.openById(SS_ID);
+  const sheet = ss.getSheetByName('お問い合わせ');
+  const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
+  const currentStatus = sheet.getRange(row, COL.USER_STATUS).getValue() || '';
+  const newStatus = currentStatus
+    ? currentStatus + '\n+ ' + data.service + ' 追加（' + now + '）'
+    : data.service + ' 追加申請  [' + now + ']';
+  sheet.getRange(row, COL.USER_STATUS).setValue(newStatus);
+  sheet.getRange(row, COL.LAST_ACTION).setValue(data.service + ' 追加契約申請  [' + now + ']');
+  return jsonResponse({ success: true });
 }
 
 // ================================================================
